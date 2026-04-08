@@ -1,0 +1,8 @@
+{
+  "name": "kafka-link-workspace",
+  "private": true,
+  "scripts": {
+    "build:web": "pnpm --filter @kafka-link/web build",
+    "check:web": "pnpm --filter @kafka-link/web exec biome check src && pnpm --filter @kafka-link/web exec tsc --noEmit"
+  }
+}
