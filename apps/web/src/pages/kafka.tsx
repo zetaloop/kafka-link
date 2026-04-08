@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useLoaderData } from "react-router-dom";
+import { useLoaderData, useRevalidator } from "react-router-dom";
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +11,6 @@ import type {
   RealtimeMessage,
 } from "@/lib/api/types";
 import { subscribeRealtime } from "@/lib/realtime/subscribe";
-import { useLiveRefresh } from "@/lib/realtime/use-live-refresh";
 
 type KafkaLoaderData = {
   cluster: KafkaClusterData;
@@ -27,8 +26,7 @@ function stableChartColor(name: string) {
 
 export function KafkaPage() {
   const { cluster, groups, details } = useLoaderData() as KafkaLoaderData;
-
-  useLiveRefresh({ intervalMs: 10000 });
+  const revalidator = useRevalidator();
 
   type LagSnapshot = { time: string; [groupId: string]: number | string };
   const lagHistory = useRef<LagSnapshot[]>([]);
@@ -36,6 +34,45 @@ export function KafkaPage() {
   const [, forceRender] = useState(0);
 
   latestDetails.current = details;
+
+  const [events, setEvents] = useState<
+    Array<{ id: string; time: string; type: string; raw: RealtimeMessage }>
+  >([]);
+
+  const revalidatorRef = useRef(revalidator);
+  revalidatorRef.current = revalidator;
+
+  useEffect(() => {
+    const unsubscribe = subscribeRealtime((message) => {
+      if (message.type !== "pong") {
+        setEvents((prev) =>
+          [
+            {
+              id: crypto.randomUUID(),
+              time: new Date().toLocaleTimeString("zh-CN", {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+              }),
+              type: message.type,
+              raw: message,
+            },
+            ...prev,
+          ].slice(0, 100),
+        );
+      }
+      revalidatorRef.current.revalidate();
+    });
+
+    const timer = setInterval(() => {
+      revalidatorRef.current.revalidate();
+    }, 10000);
+
+    return () => {
+      clearInterval(timer);
+      unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -54,27 +91,6 @@ export function KafkaPage() {
       forceRender((n) => n + 1);
     }, 1000);
     return () => clearInterval(interval);
-  }, []);
-
-  const [events, setEvents] = useState<
-    Array<{ id: string; time: string; type: string; raw: RealtimeMessage }>
-  >([]);
-
-  useEffect(() => {
-    const unsubscribe = subscribeRealtime((message) => {
-      const entry = {
-        id: crypto.randomUUID(),
-        time: new Date().toLocaleTimeString("zh-CN", {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-        }),
-        type: message.type,
-        raw: message,
-      };
-      setEvents((prev) => [entry, ...prev].slice(0, 100));
-    });
-    return unsubscribe;
   }, []);
 
   return (
