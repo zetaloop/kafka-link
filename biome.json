@@ -4,6 +4,12 @@
     "ignoreUnknown": true,
     "includes": ["apps/**/*", "package.json"]
   },
+  "css": {
+    "parser": {
+      "cssModules": true,
+      "tailwindDirectives": true
+    }
+  },
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
