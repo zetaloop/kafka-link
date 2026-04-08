@@ -263,9 +263,7 @@ export function AlertsPage() {
           <CardContent className="space-y-3">
             {alerts.length === 0 ? (
               <div className="flex h-[300px] flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-panel-soft p-8 text-center text-sm">
-                <div className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  告警历史
-                </div>
+                <div className="mb-2 text-xs font-medium text-muted-foreground">告警历史</div>
                 <div className="text-base font-medium">当前还没有告警记录。</div>
                 <div className="mt-1 text-muted-foreground">
                   规则命中后，这里会直接显示 metric、阈值、实际值和来源事件。

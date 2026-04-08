@@ -42,9 +42,7 @@ export function CityDetailPage() {
   if (!data.city) {
     return (
       <div className="flex h-[400px] flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-panel-soft p-8 text-center animate-in fade-in zoom-in-95 duration-300">
-        <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          城市详情
-        </div>
+        <div className="mb-2 text-xs font-medium text-muted-foreground">城市详情</div>
         <div className="text-lg font-medium">这个城市当前还没有详情数据。</div>
         <div className="mt-2 text-sm text-muted-foreground">
           可以先回到总览页加载 preset，或者添加一个新城市后再进入详情。
