@@ -1,14 +1,67 @@
+import { useLoaderData } from "react-router-dom";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import type { EarthquakeResponse } from "@/lib/api/types";
+import { useLiveRefresh } from "@/lib/realtime/use-live-refresh";
+
+function formatTimestamp(value: string) {
+  return new Date(value).toLocaleString("zh-CN", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 export function EarthquakesPage() {
+  const data = useLoaderData() as EarthquakeResponse;
+
+  useLiveRefresh({
+    intervalMs: 15000,
+    shouldRefresh(message) {
+      return message.type === "earthquakes.updated" || message.type === "overview.updated";
+    },
+  });
+
   return (
     <section className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
-      <EmptyState
-        eyebrow="earthquakes"
-        title="这里会同时容纳历史和实时地震流。"
-        description="启动时先显示最近 7 天事件，后续由 collector 持续推入新增地震。页面结构已经按时间倒序列表预留。"
-      />
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent earthquakes</CardTitle>
+          <CardDescription>最近 7 天历史 + 新进入的实时地震事件都会出现在这里。</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {data.items.length === 0 ? (
+            <EmptyState
+              eyebrow="earthquakes"
+              title="当前还没有地震事件。"
+              description="collector 完成初始拉取后，这里会开始按时间倒序填充。"
+            />
+          ) : (
+            data.items.map((item) => (
+              <div
+                key={item.event_id}
+                className="rounded-2xl border border-[var(--border)] bg-[var(--panel-soft)] p-4 text-sm"
+              >
+                <div className="flex items-center justify-between gap-4">
+                  <div className="font-medium">{item.summary}</div>
+                  <div className="text-[var(--muted-foreground)]">
+                    {formatTimestamp(item.observed_at)}
+                  </div>
+                </div>
+                <div className="mt-2 text-[var(--muted-foreground)]">
+                  {item.location?.place ?? "Unknown location"}
+                  {item.magnitude !== null ? ` · M${item.magnitude.toFixed(1)}` : ""}
+                  {item.location?.depth_km !== null && item.location?.depth_km !== undefined
+                    ? ` · ${item.location.depth_km.toFixed(1)} km`
+                    : ""}
+                </div>
+              </div>
+            ))
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
