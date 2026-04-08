@@ -1,4 +1,5 @@
 import asyncio
+import json
 from dataclasses import dataclass, field
 from typing import Protocol
 
@@ -6,7 +7,7 @@ from confluent_kafka import Consumer, Producer
 from redis.asyncio import Redis
 
 from kafka_link_shared.models import AlertEvent, AlertRule, NormalizedEvent
-from kafka_link_shared.settings import ServiceSettings, utc_now
+from kafka_link_shared.settings import RedisKeys, ServiceSettings, utc_now
 from kafka_link_shared.topics import ALERTS_TOPIC, CONSUMER_GROUP_ALERTING, NORMALIZED_EVENTS_TOPIC
 
 
@@ -76,6 +77,17 @@ class AlertEngine:
         for alert in alerts:
             self.producer.produce(ALERTS_TOPIC, key=alert.city_id, value=alert.model_dump_json())
             self.producer.poll(0)
+            await self.redis.publish(
+                RedisKeys.websocket_channel(),
+                json.dumps(
+                    {
+                        "type": "alert.new",
+                        "city_id": alert.city_id,
+                        "rule_id": alert.rule_id,
+                        "event_id": alert.event_id,
+                    }
+                ),
+            )
         return len(alerts)
 
     async def run_forever(self) -> None:

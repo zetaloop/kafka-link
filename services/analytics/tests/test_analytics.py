@@ -13,6 +13,7 @@ class FakeRedis:
     def __init__(self) -> None:
         self.values: dict[str, str] = {}
         self.lists: dict[str, list[str]] = {}
+        self.published: list[tuple[str, str]] = []
 
     async def get(self, key: str) -> str | None:
         return self.values.get(key)
@@ -25,6 +26,9 @@ class FakeRedis:
 
     async def ltrim(self, key: str, start: int, end: int) -> None:
         self.lists[key] = self.lists.get(key, [])[start : end + 1]
+
+    async def publish(self, channel: str, value: str) -> None:
+        self.published.append((channel, value))
 
 
 class FakeConsumer:
@@ -76,3 +80,4 @@ async def test_analytics_projects_city_event_and_alert_feed() -> None:
 
     assert latest["weather"]["metrics"]["temperature_c"] == 31.0
     assert alert_item["city_id"] == "tokyo"
+    assert len(redis.published) >= 2

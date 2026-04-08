@@ -1,3 +1,5 @@
+import asyncio
+import contextlib
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -11,6 +13,7 @@ from .routes import cities, health, preset, rules, views, ws
 from .runtime import ApiRuntime
 from .services.geocoder import GeocoderService
 from .services.kafka_status import KafkaStatusService
+from .services.pubsub_bridge import bridge_pubsub_messages
 from .services.redis_store import RedisStore
 from .services.websocket_hub import ConnectionHub
 
@@ -30,10 +33,15 @@ async def create_lifespan(app: FastAPI) -> AsyncIterator[None]:
         hub=ConnectionHub(),
     )
     app.state.runtime = runtime
+    pubsub = redis.pubsub()
+    bridge_task = asyncio.create_task(bridge_pubsub_messages(pubsub, runtime.hub))
 
     try:
         yield
     finally:
+        bridge_task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await bridge_task
         await http_client.aclose()
         await redis.aclose()
 

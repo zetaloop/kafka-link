@@ -9,6 +9,9 @@ from kafka_link_shared.settings import ServiceSettings
 
 
 class FakeRedis:
+    def __init__(self) -> None:
+        self.published: list[tuple[str, str]] = []
+
     async def smembers(self, _key: str) -> set[str]:
         return {"rule-1"}
 
@@ -25,6 +28,9 @@ class FakeRedis:
                 created_at=datetime.now(UTC),
             ).model_dump_json()
         ]
+
+    async def publish(self, channel: str, message: str) -> None:
+        self.published.append((channel, message))
 
 
 class FakeConsumer:
@@ -55,9 +61,10 @@ class FakeProducer:
 @pytest.mark.anyio
 async def test_alert_engine_emits_and_deduplicates_alert() -> None:
     producer = FakeProducer()
+    redis = FakeRedis()
     engine = AlertEngine(
         settings=ServiceSettings.from_env("alert-engine-test"),
-        redis=FakeRedis(),
+        redis=redis,
         consumer=FakeConsumer(),
         producer=producer,
     )
@@ -78,3 +85,4 @@ async def test_alert_engine_emits_and_deduplicates_alert() -> None:
     assert first_count == 1
     assert second_count == 0
     assert producer.messages[0][2] == "tokyo"
+    assert redis.published[0][0] == "events:websocket"

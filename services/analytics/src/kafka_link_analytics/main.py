@@ -37,6 +37,10 @@ class AnalyticsProjector:
             RedisKeys.overview(),
             json.dumps({"updated_at": utc_timestamp(), "summary": {"last_kind": event.kind.value}}),
         )
+        await self.redis.publish(
+            RedisKeys.websocket_channel(),
+            json.dumps({"type": "overview.updated", "kind": event.kind.value}),
+        )
 
     async def project_alert_event(self, payload: str) -> None:
         alert = AlertEvent.model_validate_json(payload)
@@ -53,6 +57,12 @@ class AnalyticsProjector:
                 "triggered_at": alert.triggered_at.isoformat(),
                 "summary": alert.summary,
             },
+        )
+        await self.redis.publish(
+            RedisKeys.websocket_channel(),
+            json.dumps(
+                {"type": "alert.feed.updated", "city_id": alert.city_id, "event_id": alert.event_id}
+            ),
         )
 
     async def run_forever(self) -> None:
@@ -92,6 +102,16 @@ class AnalyticsProjector:
                     "summary": event.summary,
                 },
             )
+            await self.redis.publish(
+                RedisKeys.websocket_channel(),
+                json.dumps(
+                    {
+                        "type": "city.snapshot.updated",
+                        "city_id": city_id,
+                        "kind": event.kind.value,
+                    }
+                ),
+            )
 
     async def _project_earthquake(self, event: NormalizedEvent) -> None:
         await self._push_json(
@@ -104,6 +124,10 @@ class AnalyticsProjector:
                 "magnitude": event.metrics.get("earthquake_magnitude"),
                 "location": event.location.model_dump(mode="json") if event.location else None,
             },
+        )
+        await self.redis.publish(
+            RedisKeys.websocket_channel(),
+            json.dumps({"type": "earthquakes.updated", "event_id": event.event_id}),
         )
 
     async def _push_json(self, key: str, payload: dict[str, object]) -> None:
