@@ -1,8 +1,16 @@
+import { useEffect, useRef, useState } from "react";
 import { useLoaderData } from "react-router-dom";
+import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { KafkaClusterData, KafkaGroupDetail, KafkaGroupListItem } from "@/lib/api/types";
+import type {
+  KafkaClusterData,
+  KafkaGroupDetail,
+  KafkaGroupListItem,
+  RealtimeMessage,
+} from "@/lib/api/types";
+import { subscribeRealtime } from "@/lib/realtime/subscribe";
 import { useLiveRefresh } from "@/lib/realtime/use-live-refresh";
 
 type KafkaLoaderData = {
@@ -15,6 +23,44 @@ export function KafkaPage() {
   const { cluster, groups, details } = useLoaderData() as KafkaLoaderData;
 
   useLiveRefresh({ intervalMs: 10000 });
+
+  type LagSnapshot = { time: string; [groupId: string]: number | string };
+  const lagHistory = useRef<LagSnapshot[]>([]);
+
+  useEffect(() => {
+    const snapshot: LagSnapshot = {
+      time: new Date().toLocaleTimeString("zh-CN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      }),
+    };
+    for (const detail of details) {
+      const totalLag = detail.offsets.reduce((sum, o) => sum + (o.lag ?? 0), 0);
+      snapshot[detail.group.group_id] = totalLag;
+    }
+    lagHistory.current = [...lagHistory.current.slice(-29), snapshot];
+  }, [details]);
+
+  const [events, setEvents] = useState<Array<{ time: string; type: string; raw: RealtimeMessage }>>(
+    [],
+  );
+
+  useEffect(() => {
+    const unsubscribe = subscribeRealtime((message) => {
+      const entry = {
+        time: new Date().toLocaleTimeString("zh-CN", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        }),
+        type: message.type,
+        raw: message,
+      };
+      setEvents((prev) => [entry, ...prev].slice(0, 100));
+    });
+    return unsubscribe;
+  }, []);
 
   return (
     <section className="space-y-5">
@@ -247,6 +293,88 @@ export function KafkaPage() {
                 </div>
               );
             })}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Consumer Lag 趋势</CardTitle>
+          <CardDescription>各消费组 Lag 历史堆叠趋势图</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[200px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={lagHistory.current}
+                margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
+              >
+                <XAxis dataKey="time" fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis fontSize={12} tickLine={false} axisLine={false} />
+                <Tooltip
+                  contentStyle={{ borderRadius: "8px", border: "1px solid var(--border)" }}
+                  labelStyle={{ fontWeight: "bold", marginBottom: "4px" }}
+                />
+                {groups.map((g, i) => (
+                  <Line
+                    key={g.group_id}
+                    type="monotone"
+                    dataKey={g.group_id}
+                    stroke={`var(--chart-${(i % 5) + 1})`}
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>实时事件流</CardTitle>
+          <CardDescription>来自 WebSocket 的实时消息推送</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="max-h-[400px] space-y-2 overflow-y-auto rounded-md border p-4">
+            {events.length === 0 ? (
+              <div className="py-8 text-center text-sm italic text-muted-foreground">
+                等待事件...
+              </div>
+            ) : (
+              events.map((event) => {
+                let extra = "";
+                const msg = event.raw;
+                if (msg.type === "city.snapshot.updated") extra = `City: ${msg.city_id}`;
+                else if (msg.type === "alert.new")
+                  extra = `City: ${msg.city_id} | Rule: ${msg.rule_id}`;
+                else if (msg.type === "earthquakes.updated") extra = `Event: ${msg.event_id}`;
+                else if (msg.type === "alert.feed.updated")
+                  extra = `City: ${msg.city_id} | Event: ${msg.event_id}`;
+                else if (msg.type === "city.upserted" || msg.type === "city.deleted")
+                  extra = `City: ${msg.city_id}`;
+                else if (msg.type === "rule.upserted" || msg.type === "rule.deleted")
+                  extra = `Rule: ${msg.rule_id}`;
+                else if (msg.type === "preset.loaded")
+                  extra = `Cities: ${msg.inserted_city_ids.length}, Rules: ${msg.inserted_rule_ids.length}`;
+
+                return (
+                  <div
+                    key={event.id}
+                    className="flex animate-in items-center gap-3 fade-in duration-300"
+                  >
+                    <span className="shrink-0 font-mono text-xs text-muted-foreground">
+                      {event.time}
+                    </span>
+                    <Badge variant="secondary" className="shrink-0">
+                      {event.type}
+                    </Badge>
+                    {extra && <span className="truncate font-mono text-sm">{extra}</span>}
+                  </div>
+                );
+              })
+            )}
+          </div>
         </CardContent>
       </Card>
     </section>
