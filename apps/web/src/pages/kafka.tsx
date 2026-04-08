@@ -1,21 +1,25 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLoaderData, useRevalidator } from "react-router-dom";
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type {
-  KafkaClusterData,
-  KafkaGroupDetail,
-  KafkaGroupListItem,
-  RealtimeMessage,
-} from "@/lib/api/types";
+import type { KafkaClusterData, KafkaGroupDetail, KafkaGroupListItem } from "@/lib/api/types";
 import { subscribeRealtime } from "@/lib/realtime/subscribe";
 
 type KafkaLoaderData = {
   cluster: KafkaClusterData;
   groups: KafkaGroupListItem[];
   details: KafkaGroupDetail[];
+};
+
+type ActivityEntry = {
+  id: string;
+  time: string;
+  source: "Kafka" | "System";
+  kind: string;
+  detail: string;
+  tone?: "default" | "warning";
 };
 
 function stableChartColor(name: string) {
@@ -35,31 +39,60 @@ export function KafkaPage() {
 
   latestDetails.current = details;
 
-  const [events, setEvents] = useState<
-    Array<{ id: string; time: string; type: string; raw: RealtimeMessage }>
-  >([]);
+  const [activity, setActivity] = useState<ActivityEntry[]>([]);
+  const previousKafkaState = useRef<{
+    initialized: boolean;
+    controller: string;
+    groups: Map<string, { lag: number; members: number; state: string | null }>;
+    topics: Map<string, number>;
+  }>({
+    initialized: false,
+    controller: "",
+    groups: new Map(),
+    topics: new Map(),
+  });
 
   const revalidatorRef = useRef(revalidator);
   revalidatorRef.current = revalidator;
 
+  const pushActivity = useCallback((entries: ActivityEntry[]) => {
+    if (entries.length === 0) {
+      return;
+    }
+    setActivity((prev) => [...entries.reverse(), ...prev].slice(0, 120));
+  }, []);
+
   useEffect(() => {
     const unsubscribe = subscribeRealtime((message) => {
       if (message.type !== "pong") {
-        setEvents((prev) =>
-          [
-            {
-              id: crypto.randomUUID(),
-              time: new Date().toLocaleTimeString("zh-CN", {
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
-              }),
-              type: message.type,
-              raw: message,
-            },
-            ...prev,
-          ].slice(0, 100),
-        );
+        let detail = "";
+        if (message.type === "city.snapshot.updated") detail = `City ${message.city_id}`;
+        else if (message.type === "overview.updated") detail = `Kind ${message.kind}`;
+        else if (message.type === "alert.new") detail = `${message.city_id} · ${message.rule_id}`;
+        else if (message.type === "earthquakes.updated") detail = `Event ${message.event_id}`;
+        else if (message.type === "alert.feed.updated")
+          detail = `${message.city_id} · ${message.event_id}`;
+        else if (message.type === "city.upserted" || message.type === "city.deleted")
+          detail = message.city_id;
+        else if (message.type === "rule.upserted" || message.type === "rule.deleted")
+          detail = message.rule_id;
+        else if (message.type === "preset.loaded") {
+          detail = `${message.inserted_city_ids.length} cities · ${message.inserted_rule_ids.length} rules`;
+        }
+
+        pushActivity([
+          {
+            id: crypto.randomUUID(),
+            time: new Date().toLocaleTimeString("zh-CN", {
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+            }),
+            source: "System",
+            kind: message.type,
+            detail,
+          },
+        ]);
       }
       revalidatorRef.current.revalidate();
     });
@@ -72,7 +105,7 @@ export function KafkaPage() {
       clearInterval(timer);
       unsubscribe();
     };
-  }, []);
+  }, [pushActivity]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -92,6 +125,149 @@ export function KafkaPage() {
     }, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    const time = new Date().toLocaleTimeString("zh-CN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+    const controller = cluster.controller
+      ? `${cluster.controller.id}:${cluster.controller.host}:${cluster.controller.port}`
+      : "none";
+    const nextGroups = new Map(
+      details.map((detail) => [
+        detail.group.group_id,
+        {
+          lag: detail.offsets.reduce((sum, offset) => sum + (offset.lag ?? 0), 0),
+          members: detail.members.length,
+          state: detail.group.state,
+        },
+      ]),
+    );
+    const nextTopics = new Map(cluster.topics.map((topic) => [topic.name, topic.partition_count]));
+    const previous = previousKafkaState.current;
+
+    if (!previous.initialized) {
+      previousKafkaState.current = {
+        initialized: true,
+        controller,
+        groups: nextGroups,
+        topics: nextTopics,
+      };
+      pushActivity([
+        {
+          id: crypto.randomUUID(),
+          time,
+          source: "Kafka",
+          kind: "snapshot.loaded",
+          detail: `${cluster.brokers.length} brokers · ${cluster.topics.length} topics · ${details.length} groups`,
+        },
+      ]);
+      return;
+    }
+
+    const entries: ActivityEntry[] = [];
+
+    if (previous.controller !== controller) {
+      entries.push({
+        id: crypto.randomUUID(),
+        time,
+        source: "Kafka",
+        kind: "controller.changed",
+        detail: `${previous.controller || "none"} → ${controller || "none"}`,
+        tone: "warning",
+      });
+    }
+
+    for (const [groupId, next] of nextGroups) {
+      const prev = previous.groups.get(groupId);
+      if (!prev) {
+        entries.push({
+          id: crypto.randomUUID(),
+          time,
+          source: "Kafka",
+          kind: "group.joined",
+          detail: `${groupId} appeared with ${next.members} members`,
+        });
+        continue;
+      }
+      if (prev.state !== next.state) {
+        entries.push({
+          id: crypto.randomUUID(),
+          time,
+          source: "Kafka",
+          kind: "group.state",
+          detail: `${groupId} ${prev.state ?? "unknown"} → ${next.state ?? "unknown"}`,
+          tone: "warning",
+        });
+      }
+      if (prev.members !== next.members) {
+        entries.push({
+          id: crypto.randomUUID(),
+          time,
+          source: "Kafka",
+          kind: "group.members",
+          detail: `${groupId} ${prev.members} → ${next.members} members`,
+        });
+      }
+      if (prev.lag !== next.lag) {
+        entries.push({
+          id: crypto.randomUUID(),
+          time,
+          source: "Kafka",
+          kind: "group.lag",
+          detail: `${groupId} ${prev.lag} → ${next.lag}`,
+          tone: next.lag > prev.lag ? "warning" : "default",
+        });
+      }
+    }
+
+    for (const [groupId] of previous.groups) {
+      if (!nextGroups.has(groupId)) {
+        entries.push({
+          id: crypto.randomUUID(),
+          time,
+          source: "Kafka",
+          kind: "group.left",
+          detail: `${groupId} disappeared`,
+          tone: "warning",
+        });
+      }
+    }
+
+    for (const [topicName, partitionCount] of nextTopics) {
+      const previousPartitionCount = previous.topics.get(topicName);
+      if (previousPartitionCount === undefined) {
+        entries.push({
+          id: crypto.randomUUID(),
+          time,
+          source: "Kafka",
+          kind: "topic.created",
+          detail: `${topicName} with ${partitionCount} partitions`,
+        });
+        continue;
+      }
+      if (previousPartitionCount !== partitionCount) {
+        entries.push({
+          id: crypto.randomUUID(),
+          time,
+          source: "Kafka",
+          kind: "topic.partitions",
+          detail: `${topicName} ${previousPartitionCount} → ${partitionCount}`,
+          tone: "warning",
+        });
+      }
+    }
+
+    previousKafkaState.current = {
+      initialized: true,
+      controller,
+      groups: nextGroups,
+      topics: nextTopics,
+    };
+    pushActivity(entries.slice(0, 12));
+  }, [cluster.brokers.length, cluster.controller, cluster.topics, details, pushActivity]);
 
   return (
     <section className="space-y-5">
@@ -364,33 +540,17 @@ export function KafkaPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>实时事件流</CardTitle>
-          <CardDescription>来自 WebSocket 的实时消息推送</CardDescription>
+          <CardTitle>活动流</CardTitle>
+          <CardDescription>Kafka 状态变化与系统实时事件会一起显示在这里</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="max-h-[400px] space-y-2 overflow-y-auto rounded-md border p-4">
-            {events.length === 0 ? (
+            {activity.length === 0 ? (
               <div className="py-8 text-center text-sm italic text-muted-foreground">
                 等待事件...
               </div>
             ) : (
-              events.map((event) => {
-                let extra = "";
-                const msg = event.raw;
-                if (msg.type === "city.snapshot.updated") extra = `City: ${msg.city_id}`;
-                else if (msg.type === "overview.updated") extra = `Kind: ${msg.kind}`;
-                else if (msg.type === "alert.new")
-                  extra = `City: ${msg.city_id} | Rule: ${msg.rule_id}`;
-                else if (msg.type === "earthquakes.updated") extra = `Event: ${msg.event_id}`;
-                else if (msg.type === "alert.feed.updated")
-                  extra = `City: ${msg.city_id} | Event: ${msg.event_id}`;
-                else if (msg.type === "city.upserted" || msg.type === "city.deleted")
-                  extra = `City: ${msg.city_id}`;
-                else if (msg.type === "rule.upserted" || msg.type === "rule.deleted")
-                  extra = `Rule: ${msg.rule_id}`;
-                else if (msg.type === "preset.loaded")
-                  extra = `Cities: ${msg.inserted_city_ids.length}, Rules: ${msg.inserted_rule_ids.length}`;
-
+              activity.map((event) => {
                 return (
                   <div
                     key={event.id}
@@ -399,10 +559,20 @@ export function KafkaPage() {
                     <span className="shrink-0 font-mono text-xs text-muted-foreground">
                       {event.time}
                     </span>
-                    <Badge variant="secondary" className="shrink-0">
-                      {event.type}
+                    <Badge
+                      variant={event.source === "Kafka" ? "outline" : "secondary"}
+                      className="shrink-0"
+                    >
+                      {event.source}
                     </Badge>
-                    {extra && <span className="truncate font-mono text-sm">{extra}</span>}
+                    <span className="shrink-0 font-mono text-xs text-muted-foreground">
+                      {event.kind}
+                    </span>
+                    <span
+                      className={`truncate font-mono text-sm ${event.tone === "warning" ? "text-chart-3" : ""}`}
+                    >
+                      {event.detail}
+                    </span>
                   </div>
                 );
               })
