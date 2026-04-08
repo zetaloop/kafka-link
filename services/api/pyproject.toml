@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=80", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kafka-link-api"
+version = "0.1.0"
+description = "FastAPI service for kafka-link"
+requires-python = ">=3.14"
+dependencies = [
+    "fastapi>=0.135.3",
+    "httpx>=0.28.1",
+    "kafka-link-shared",
+    "redis>=7.4.0",
+    "uvicorn>=0.44.0",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.uv.sources]
+kafka-link-shared = { workspace = true }
