@@ -63,20 +63,18 @@ export function KafkaPage() {
     setActivity((prev) => {
       const next = [...prev];
       for (const entry of [...entries].reverse()) {
-        const first = next[0];
-        const canMerge =
-          first &&
-          first.time === entry.time &&
-          first.source === entry.source &&
-          first.kind === entry.kind &&
-          (entry.source === "System" || first.detail === entry.detail);
+        const mergeIndex = next.findIndex(
+          (item) =>
+            item.time === entry.time && item.source === entry.source && item.kind === entry.kind,
+        );
 
-        if (canMerge) {
-          next[0] = {
-            ...first,
-            count: (first.count ?? 1) + (entry.count ?? 1),
-            detail: entry.detail || first.detail,
-            tone: entry.tone ?? first.tone,
+        if (mergeIndex >= 0) {
+          const target = next[mergeIndex];
+          next[mergeIndex] = {
+            ...target,
+            count: (target.count ?? 1) + (entry.count ?? 1),
+            detail: entry.detail || target.detail,
+            tone: entry.tone ?? target.tone,
           };
         } else {
           next.unshift(entry);
