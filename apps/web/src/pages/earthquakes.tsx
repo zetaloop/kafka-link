@@ -24,7 +24,7 @@ export function EarthquakesPage() {
   });
 
   return (
-    <section className="mx-auto max-w-4xl">
+    <section>
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
@@ -33,7 +33,7 @@ export function EarthquakesPage() {
           </div>
           <CardDescription>系统将实时接收地震数据，展示最近 7 天内的地震事件记录。</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="max-h-[calc(100vh-14rem)] space-y-3 overflow-y-auto">
           {data.items.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
               <WavesLadder className="mb-4 size-8 opacity-50" />
