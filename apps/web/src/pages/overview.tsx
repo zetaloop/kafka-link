@@ -62,7 +62,7 @@ export function OverviewPage() {
     {
       label: "近期地震",
       value: String(data.summary.earthquake_count),
-      hint: "来自实时事件流与历史数据汇总",
+      hint: "实时事件流与历史数据汇总",
       badge: "持续监听",
       icon: <WavesLadder className="size-5" />,
     },
