@@ -3,6 +3,14 @@ import { useLoaderData, useRevalidator } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { createRule, deleteRule } from "@/lib/api/client";
 import type { AlertFeedItem, CityRecord, RuleRecord } from "@/lib/api/types";
 import { useLiveRefresh } from "@/lib/realtime/use-live-refresh";
@@ -98,38 +106,42 @@ export function AlertsPage() {
             <form className="space-y-3" onSubmit={handleCreateRule}>
               <div className="space-y-1">
                 <div className="text-xs text-[var(--muted-foreground)]">规则名称</div>
-                <input
+                <Input
                   value={formState.name}
                   onChange={(event) =>
                     setFormState((current) => ({ ...current, name: event.target.value }))
                   }
-                  className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--panel-soft)] px-3 text-sm outline-none"
+                  className="h-10 w-full rounded-xl border-[var(--border)] bg-[var(--panel-soft)] px-3 outline-none"
                   placeholder="请输入规则名称"
                 />
               </div>
               <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
                 <div className="space-y-1">
                   <div className="text-xs text-[var(--muted-foreground)]">城市</div>
-                  <select
+                  <Select
                     value={formState.city_id}
-                    onChange={(event) =>
-                      setFormState((current) => ({ ...current, city_id: event.target.value }))
+                    onValueChange={(value) =>
+                      setFormState((current) => ({ ...current, city_id: value }))
                     }
-                    className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--panel-soft)] px-3 text-sm outline-none"
                   >
-                    {cities.map((city) => (
-                      <option key={city.city_id} value={city.city_id}>
-                        {city.name}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--panel-soft)] px-3 text-sm outline-none">
+                      <SelectValue placeholder="请选择城市" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {cities.map((city) => (
+                        <SelectItem key={city.city_id} value={city.city_id}>
+                          {city.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-1">
                   <div className="text-xs text-[var(--muted-foreground)]">数据源</div>
-                  <select
+                  <Select
                     value={formState.source}
-                    onChange={(event) => {
-                      const source = event.target.value as RuleRecord["source"];
+                    onValueChange={(value) => {
+                      const source = value as RuleRecord["source"];
                       const nextMetric =
                         source === "weather"
                           ? "temperature_c"
@@ -138,59 +150,71 @@ export function AlertsPage() {
                             : "earthquake_magnitude";
                       setFormState((current) => ({ ...current, source, metric: nextMetric }));
                     }}
-                    className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--panel-soft)] px-3 text-sm outline-none"
                   >
-                    <option value="weather">天气</option>
-                    <option value="airquality">空气质量</option>
-                    <option value="earthquake">地震</option>
-                  </select>
+                    <SelectTrigger className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--panel-soft)] px-3 text-sm outline-none">
+                      <SelectValue placeholder="请选择数据源" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="weather">天气</SelectItem>
+                      <SelectItem value="airquality">空气质量</SelectItem>
+                      <SelectItem value="earthquake">地震</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-1">
                   <div className="text-xs text-[var(--muted-foreground)]">指标</div>
-                  <select
+                  <Select
                     value={formState.metric}
-                    onChange={(event) =>
+                    onValueChange={(value) =>
                       setFormState((current) => ({
                         ...current,
-                        metric: event.target.value as RuleRecord["metric"],
+                        metric: value as RuleRecord["metric"],
                       }))
                     }
-                    className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--panel-soft)] px-3 text-sm outline-none"
                   >
-                    {metricOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--panel-soft)] px-3 text-sm outline-none">
+                      <SelectValue placeholder="请选择指标" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {metricOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-1">
                   <div className="text-xs text-[var(--muted-foreground)]">运算符</div>
-                  <select
+                  <Select
                     value={formState.operator}
-                    onChange={(event) =>
+                    onValueChange={(value) =>
                       setFormState((current) => ({
                         ...current,
-                        operator: event.target.value as RuleRecord["operator"],
+                        operator: value as RuleRecord["operator"],
                       }))
                     }
-                    className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--panel-soft)] px-3 text-sm outline-none"
                   >
-                    <option value="gt">&gt;</option>
-                    <option value="gte">&gt;=</option>
-                    <option value="lt">&lt;</option>
-                    <option value="lte">&lt;=</option>
-                    <option value="eq">==</option>
-                  </select>
+                    <SelectTrigger className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--panel-soft)] px-3 text-sm outline-none">
+                      <SelectValue placeholder="请选择运算符" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="gt">&gt;</SelectItem>
+                      <SelectItem value="gte">&gt;=</SelectItem>
+                      <SelectItem value="lt">&lt;</SelectItem>
+                      <SelectItem value="lte">&lt;=</SelectItem>
+                      <SelectItem value="eq">==</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-1">
                   <div className="text-xs text-[var(--muted-foreground)]">阈值</div>
-                  <input
+                  <Input
                     value={formState.threshold}
                     onChange={(event) =>
                       setFormState((current) => ({ ...current, threshold: event.target.value }))
                     }
-                    className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--panel-soft)] px-3 text-sm outline-none"
+                    className="h-10 w-full rounded-xl border-[var(--border)] bg-[var(--panel-soft)] px-3 outline-none"
                     placeholder="请输入阈值"
                   />
                 </div>
