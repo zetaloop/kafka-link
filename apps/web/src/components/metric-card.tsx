@@ -13,7 +13,7 @@ type MetricCardProps = {
 
 export function MetricCard({ label, value, hint, badge, icon }: MetricCardProps) {
   return (
-    <Card className="overflow-hidden">
+    <Card variant="texture" className="overflow-hidden">
       <CardHeader className="gap-4 pb-4">
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-2">

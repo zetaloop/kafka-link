@@ -26,7 +26,7 @@ export function KafkaPage() {
           {cluster.brokers.map((broker) => (
             <div
               key={broker.id ?? `${broker.host}:${broker.port}`}
-              className="rounded-2xl border border-[var(--border)] bg-[var(--panel-soft)] p-4 text-sm"
+              className="rounded-2xl border border-border bg-panel-soft p-4 text-sm"
             >
               broker {broker.id} · {broker.host}:{broker.port}
             </div>
@@ -41,14 +41,9 @@ export function KafkaPage() {
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
           {cluster.topics.map((topic) => (
-            <div
-              key={topic.name}
-              className="rounded-2xl border border-[var(--border)] bg-[var(--panel-soft)] p-4"
-            >
+            <div key={topic.name} className="rounded-2xl border border-border bg-panel-soft p-4">
               <div className="font-medium">{topic.name}</div>
-              <div className="mt-2 text-[var(--muted-foreground)]">
-                {topic.partition_count} partitions
-              </div>
+              <div className="mt-2 text-muted-foreground">{topic.partition_count} partitions</div>
             </div>
           ))}
         </CardContent>
@@ -67,10 +62,10 @@ export function KafkaPage() {
             return (
               <div
                 key={group.group_id}
-                className="rounded-2xl border border-[var(--border)] bg-[var(--panel-soft)] p-4"
+                className="rounded-2xl border border-border bg-panel-soft p-4"
               >
                 <div className="font-medium">{group.group_id}</div>
-                <div className="mt-2 text-[var(--muted-foreground)]">
+                <div className="mt-2 text-muted-foreground">
                   {group.state ?? "unknown"} · lag {totalLag}
                 </div>
               </div>

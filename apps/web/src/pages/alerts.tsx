@@ -105,26 +105,26 @@ export function AlertsPage() {
           <CardContent className="space-y-4">
             <form className="space-y-3" onSubmit={handleCreateRule}>
               <div className="space-y-1">
-                <div className="text-xs text-[var(--muted-foreground)]">规则名称</div>
+                <div className="text-xs text-muted-foreground">规则名称</div>
                 <Input
                   value={formState.name}
                   onChange={(event) =>
                     setFormState((current) => ({ ...current, name: event.target.value }))
                   }
-                  className="h-10 w-full rounded-xl border-[var(--border)] bg-[var(--panel-soft)] px-3 outline-none"
+                  className="h-10 w-full rounded-xl border-border bg-panel-soft px-3 outline-none"
                   placeholder="请输入规则名称"
                 />
               </div>
               <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
                 <div className="space-y-1">
-                  <div className="text-xs text-[var(--muted-foreground)]">城市</div>
+                  <div className="text-xs text-muted-foreground">城市</div>
                   <Select
                     value={formState.city_id}
                     onValueChange={(value) =>
                       setFormState((current) => ({ ...current, city_id: value }))
                     }
                   >
-                    <SelectTrigger className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--panel-soft)] px-3 text-sm outline-none">
+                    <SelectTrigger className="h-10 w-full rounded-xl border border-border bg-panel-soft px-3 text-sm outline-none">
                       <SelectValue placeholder="请选择城市" />
                     </SelectTrigger>
                     <SelectContent>
@@ -137,7 +137,7 @@ export function AlertsPage() {
                   </Select>
                 </div>
                 <div className="space-y-1">
-                  <div className="text-xs text-[var(--muted-foreground)]">数据源</div>
+                  <div className="text-xs text-muted-foreground">数据源</div>
                   <Select
                     value={formState.source}
                     onValueChange={(value) => {
@@ -151,7 +151,7 @@ export function AlertsPage() {
                       setFormState((current) => ({ ...current, source, metric: nextMetric }));
                     }}
                   >
-                    <SelectTrigger className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--panel-soft)] px-3 text-sm outline-none">
+                    <SelectTrigger className="h-10 w-full rounded-xl border border-border bg-panel-soft px-3 text-sm outline-none">
                       <SelectValue placeholder="请选择数据源" />
                     </SelectTrigger>
                     <SelectContent>
@@ -162,7 +162,7 @@ export function AlertsPage() {
                   </Select>
                 </div>
                 <div className="space-y-1">
-                  <div className="text-xs text-[var(--muted-foreground)]">指标</div>
+                  <div className="text-xs text-muted-foreground">指标</div>
                   <Select
                     value={formState.metric}
                     onValueChange={(value) =>
@@ -172,7 +172,7 @@ export function AlertsPage() {
                       }))
                     }
                   >
-                    <SelectTrigger className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--panel-soft)] px-3 text-sm outline-none">
+                    <SelectTrigger className="h-10 w-full rounded-xl border border-border bg-panel-soft px-3 text-sm outline-none">
                       <SelectValue placeholder="请选择指标" />
                     </SelectTrigger>
                     <SelectContent>
@@ -185,7 +185,7 @@ export function AlertsPage() {
                   </Select>
                 </div>
                 <div className="space-y-1">
-                  <div className="text-xs text-[var(--muted-foreground)]">运算符</div>
+                  <div className="text-xs text-muted-foreground">运算符</div>
                   <Select
                     value={formState.operator}
                     onValueChange={(value) =>
@@ -195,7 +195,7 @@ export function AlertsPage() {
                       }))
                     }
                   >
-                    <SelectTrigger className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--panel-soft)] px-3 text-sm outline-none">
+                    <SelectTrigger className="h-10 w-full rounded-xl border border-border bg-panel-soft px-3 text-sm outline-none">
                       <SelectValue placeholder="请选择运算符" />
                     </SelectTrigger>
                     <SelectContent>
@@ -208,13 +208,13 @@ export function AlertsPage() {
                   </Select>
                 </div>
                 <div className="space-y-1">
-                  <div className="text-xs text-[var(--muted-foreground)]">阈值</div>
+                  <div className="text-xs text-muted-foreground">阈值</div>
                   <Input
                     value={formState.threshold}
                     onChange={(event) =>
                       setFormState((current) => ({ ...current, threshold: event.target.value }))
                     }
-                    className="h-10 w-full rounded-xl border-[var(--border)] bg-[var(--panel-soft)] px-3 outline-none"
+                    className="h-10 w-full rounded-xl border-border bg-panel-soft px-3 outline-none"
                     placeholder="请输入阈值"
                   />
                 </div>
@@ -232,12 +232,12 @@ export function AlertsPage() {
               {rules.map((rule) => (
                 <div
                   key={rule.rule_id}
-                  className="rounded-2xl border border-[var(--border)] bg-[var(--panel-soft)] p-4 text-sm"
+                  className="rounded-2xl border border-border bg-panel-soft p-4 text-sm"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <div className="font-medium">{rule.name}</div>
-                      <div className="mt-1 text-[var(--muted-foreground)]">
+                      <div className="mt-1 text-muted-foreground">
                         {rule.source} · {rule.metric} {rule.operator} {rule.threshold}
                       </div>
                     </div>
@@ -262,12 +262,12 @@ export function AlertsPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             {alerts.length === 0 ? (
-              <div className="flex h-[300px] flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border)] bg-[var(--panel-soft)] p-8 text-center text-sm">
-                <div className="mb-2 text-xs font-medium uppercase tracking-wider text-[var(--muted-foreground)]">
+              <div className="flex h-[300px] flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-panel-soft p-8 text-center text-sm">
+                <div className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   告警历史
                 </div>
                 <div className="text-base font-medium">当前还没有告警记录。</div>
-                <div className="mt-1 text-[var(--muted-foreground)]">
+                <div className="mt-1 text-muted-foreground">
                   规则命中后，这里会直接显示 metric、阈值、实际值和来源事件。
                 </div>
               </div>
@@ -275,10 +275,10 @@ export function AlertsPage() {
               alerts.map((alert) => (
                 <div
                   key={alert.event_id}
-                  className="rounded-2xl border border-[var(--border)] bg-[var(--panel-soft)] p-4 text-sm"
+                  className="rounded-2xl border border-border bg-panel-soft p-4 text-sm"
                 >
                   <div className="font-medium">{alert.summary}</div>
-                  <div className="mt-2 text-[var(--muted-foreground)]">
+                  <div className="mt-2 text-muted-foreground">
                     {alert.city_id} · {alert.metric}: {alert.actual_value} / {alert.threshold}
                   </div>
                 </div>

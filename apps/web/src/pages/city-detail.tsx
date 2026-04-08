@@ -41,12 +41,12 @@ export function CityDetailPage() {
 
   if (!data.city) {
     return (
-      <div className="flex h-[400px] flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border)] bg-[var(--panel-soft)] p-8 text-center animate-in fade-in zoom-in-95 duration-300">
-        <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
+      <div className="flex h-[400px] flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-panel-soft p-8 text-center animate-in fade-in zoom-in-95 duration-300">
+        <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           城市详情
         </div>
         <div className="text-lg font-medium">这个城市当前还没有详情数据。</div>
-        <div className="mt-2 text-sm text-[var(--muted-foreground)]">
+        <div className="mt-2 text-sm text-muted-foreground">
           可以先回到总览页加载 preset，或者添加一个新城市后再进入详情。
         </div>
       </div>
@@ -75,23 +75,23 @@ export function CityDetailPage() {
           <CardContent className="space-y-4">
             <div className="text-4xl font-semibold">
               {data.latest?.weather?.metrics.temperature_c?.toFixed(1) ?? "--"}
-              <span className="ml-2 text-base text-[var(--muted-foreground)]">°C</span>
+              <span className="ml-2 text-base text-muted-foreground">°C</span>
             </div>
-            <div className="h-52 rounded-2xl border border-dashed border-[var(--border)] bg-[var(--panel-soft)] p-3">
-              <div className="mb-2 text-xs font-medium text-[var(--muted-foreground)]">趋势图</div>
+            <div className="h-52 rounded-2xl border border-dashed border-border bg-panel-soft p-3">
+              <div className="mb-2 text-xs font-medium text-muted-foreground">趋势图</div>
               <ResponsiveContainer width="100%" height="80%">
                 <LineChart data={weatherPoints}>
                   <XAxis
                     dataKey="label"
                     stroke="currentColor"
-                    className="text-[var(--muted-foreground)]"
+                    className="text-muted-foreground"
                     fontSize={12}
                     tickLine={false}
                     axisLine={false}
                   />
                   <YAxis
                     stroke="currentColor"
-                    className="text-[var(--muted-foreground)]"
+                    className="text-muted-foreground"
                     fontSize={12}
                     tickLine={false}
                     axisLine={false}
@@ -104,7 +104,7 @@ export function CityDetailPage() {
                       backgroundColor: "var(--panel)",
                     }}
                   />
-                  <Line dataKey="value" stroke="var(--primary)" strokeWidth={2.5} dot={false} />
+                  <Line dataKey="value" stroke="var(--chart-1)" strokeWidth={2.5} dot={false} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -121,23 +121,23 @@ export function CityDetailPage() {
           <CardContent className="space-y-4">
             <div className="text-4xl font-semibold">
               {data.latest?.airquality?.metrics.aqi_us?.toFixed(0) ?? "--"}
-              <span className="ml-2 text-base text-[var(--muted-foreground)]">AQI</span>
+              <span className="ml-2 text-base text-muted-foreground">AQI</span>
             </div>
-            <div className="h-52 rounded-2xl border border-dashed border-[var(--border)] bg-[var(--panel-soft)] p-3">
-              <div className="mb-2 text-xs font-medium text-[var(--muted-foreground)]">趋势图</div>
+            <div className="h-52 rounded-2xl border border-dashed border-border bg-panel-soft p-3">
+              <div className="mb-2 text-xs font-medium text-muted-foreground">趋势图</div>
               <ResponsiveContainer width="100%" height="80%">
                 <LineChart data={airPoints}>
                   <XAxis
                     dataKey="label"
                     stroke="currentColor"
-                    className="text-[var(--muted-foreground)]"
+                    className="text-muted-foreground"
                     fontSize={12}
                     tickLine={false}
                     axisLine={false}
                   />
                   <YAxis
                     stroke="currentColor"
-                    className="text-[var(--muted-foreground)]"
+                    className="text-muted-foreground"
                     fontSize={12}
                     tickLine={false}
                     axisLine={false}
@@ -150,7 +150,7 @@ export function CityDetailPage() {
                       backgroundColor: "var(--panel)",
                     }}
                   />
-                  <Line dataKey="value" stroke="var(--primary)" strokeWidth={2.5} dot={false} />
+                  <Line dataKey="value" stroke="var(--chart-2)" strokeWidth={2.5} dot={false} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -168,16 +168,16 @@ export function CityDetailPage() {
                   data.earthquakes.map((item) => (
                     <div
                       key={item.event_id}
-                      className="rounded-2xl border border-[var(--border)] bg-[var(--panel-soft)] p-4 text-sm"
+                      className="rounded-2xl border border-border bg-panel-soft p-4 text-sm"
                     >
                       <div className="font-medium">{item.summary}</div>
-                      <div className="mt-2 text-[var(--muted-foreground)]">
+                      <div className="mt-2 text-muted-foreground">
                         {item.location?.place ?? "Unknown location"}
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--panel-soft)] p-4 text-sm text-[var(--muted-foreground)]">
+                  <div className="rounded-2xl border border-dashed border-border bg-panel-soft p-4 text-sm text-muted-foreground">
                     当前没有关联到这个城市的地震事件。
                   </div>
                 )}
@@ -192,17 +192,17 @@ export function CityDetailPage() {
             <CardContent className="space-y-4">
               <div className="space-y-3">
                 {data.alerts.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--panel-soft)] p-4 text-sm text-[var(--muted-foreground)]">
+                  <div className="rounded-2xl border border-dashed border-border bg-panel-soft p-4 text-sm text-muted-foreground">
                     当前还没有关联到这个城市的告警。
                   </div>
                 ) : (
                   data.alerts.map((alert) => (
                     <div
                       key={alert.event_id}
-                      className="rounded-2xl border border-[var(--border)] bg-[var(--panel-soft)] p-4 text-sm"
+                      className="rounded-2xl border border-border bg-panel-soft p-4 text-sm"
                     >
                       <div className="font-medium">{alert.summary}</div>
-                      <div className="mt-2 text-[var(--muted-foreground)]">
+                      <div className="mt-2 text-muted-foreground">
                         {alert.metric}: {alert.actual_value} / {alert.threshold}
                       </div>
                     </div>

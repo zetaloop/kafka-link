@@ -122,9 +122,9 @@ export function OverviewPage() {
       <div className="grid gap-5 xl:grid-cols-[1.3fr_0.7fr]">
         {data.cities.length === 0 ? (
           <Card className="flex flex-col items-center justify-center p-12 text-center">
-            <CloudSun className="mb-4 size-10 text-[var(--muted-foreground)] opacity-50" />
+            <CloudSun className="mb-4 size-10 text-muted-foreground opacity-50" />
             <h3 className="mb-2 text-lg font-medium">暂无城市数据</h3>
-            <p className="mb-6 max-w-sm text-sm text-[var(--muted-foreground)]">
+            <p className="mb-6 max-w-sm text-sm text-muted-foreground">
               当前尚未接入任何城市，您可以加载系统默认预设，或者手动输入城市名进行添加。
             </p>
             <div className="flex flex-col items-center gap-4 sm:flex-row">
@@ -165,10 +165,7 @@ export function OverviewPage() {
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               {data.cities.map((city) => (
-                <Card
-                  key={city.city_id}
-                  className="transition-colors hover:border-[var(--border-hover)]"
-                >
+                <Card key={city.city_id} className="transition-colors hover:border-border-hover">
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between gap-3">
                       <div>
@@ -180,7 +177,7 @@ export function OverviewPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 px-2 text-[var(--muted-foreground)] hover:text-destructive"
+                        className="h-8 px-2 text-muted-foreground hover:text-destructive"
                         onClick={() => void handleDeleteCity(city.city_id)}
                         disabled={submitting}
                       >
@@ -188,8 +185,8 @@ export function OverviewPage() {
                       </Button>
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-3 text-sm text-[var(--muted-foreground)]">
-                    <div className="flex items-center justify-between rounded-md bg-[var(--panel-soft)] px-3 py-2">
+                  <CardContent className="space-y-3 text-sm text-muted-foreground">
+                    <div className="flex items-center justify-between rounded-md bg-panel-soft px-3 py-2">
                       <span className="truncate">
                         {city.latitude.toFixed(2)}, {city.longitude.toFixed(2)}
                       </span>
