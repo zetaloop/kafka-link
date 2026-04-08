@@ -112,6 +112,63 @@ class FakeGeocoder:
         )
 
 
+class FakeKafkaStatusService:
+    def read_cluster(self) -> dict[str, object]:
+        return {
+            "cluster_id": "demo-cluster",
+            "controller": {"id": 1, "host": "localhost", "port": 29092, "rack": None},
+            "brokers": [
+                {"id": 1, "host": "localhost", "port": 29092, "rack": None},
+                {"id": 2, "host": "localhost", "port": 39092, "rack": None},
+            ],
+            "topics": [
+                {"name": "raw.weather", "partition_count": 3, "partitions": []},
+                {"name": "normalized.events", "partition_count": 3, "partitions": []},
+            ],
+        }
+
+    def list_groups(self) -> list[dict[str, object]]:
+        return [
+            {
+                "group_id": "analytics",
+                "state": "STABLE",
+                "type": "CONSUMER",
+                "is_simple_consumer_group": False,
+            }
+        ]
+
+    def read_group(self, group_id: str) -> dict[str, object] | None:
+        if group_id != "analytics":
+            return None
+
+        return {
+            "group": {
+                "group_id": "analytics",
+                "state": "STABLE",
+                "type": "CONSUMER",
+                "partition_assignor": "range",
+                "coordinator": {"id": 1, "host": "localhost", "port": 29092, "rack": None},
+            },
+            "members": [
+                {
+                    "member_id": "member-1",
+                    "client_id": "analytics-client",
+                    "host": "/172.18.0.10",
+                    "assignment": [{"topic": "normalized.events", "partition": 0, "offset": -1001}],
+                }
+            ],
+            "offsets": [
+                {
+                    "topic": "normalized.events",
+                    "partition": 0,
+                    "committed": 12,
+                    "latest": 20,
+                    "lag": 8,
+                }
+            ],
+        }
+
+
 def create_test_client() -> TestClient:
     runtime = ApiRuntime(
         settings=ServiceSettings.from_env("api-test"),
@@ -119,6 +176,7 @@ def create_test_client() -> TestClient:
         http_client=AsyncClient(),
         store=FakeStore(),
         geocoder=FakeGeocoder(),
+        kafka_status=FakeKafkaStatusService(),
         hub=ConnectionHub(),
     )
 
@@ -153,3 +211,28 @@ def test_demo_preset_populates_views() -> None:
     assert overview.status_code == 200
     assert overview.json()["summary"]["city_count"] == 1
     assert overview.json()["summary"]["rule_count"] == 1
+
+
+def test_kafka_cluster_endpoint() -> None:
+    with create_test_client() as client:
+        response = client.get("/api/kafka/cluster")
+
+    assert response.status_code == 200
+    assert response.json()["cluster_id"] == "demo-cluster"
+    assert len(response.json()["topics"]) == 2
+
+
+def test_kafka_group_detail_endpoint() -> None:
+    with create_test_client() as client:
+        response = client.get("/api/kafka/groups/analytics")
+
+    assert response.status_code == 200
+    assert response.json()["group"]["group_id"] == "analytics"
+    assert response.json()["offsets"][0]["lag"] == 8
+
+
+def test_kafka_group_detail_missing_returns_404() -> None:
+    with create_test_client() as client:
+        response = client.get("/api/kafka/groups/missing")
+
+    assert response.status_code == 404

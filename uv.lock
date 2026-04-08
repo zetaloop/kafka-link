@@ -219,6 +219,7 @@ name = "kafka-link-api"
 version = "0.1.0"
 source = { editable = "services/api" }
 dependencies = [
+    { name = "confluent-kafka" },
     { name = "fastapi" },
     { name = "httpx" },
     { name = "kafka-link-shared" },
@@ -228,6 +229,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "confluent-kafka", specifier = ">=2.14.0" },
     { name = "fastapi", specifier = ">=0.135.3" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "kafka-link-shared", editable = "packages/shared" },
