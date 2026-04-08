@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-bootstrap_server="kafka-1:19092"
+readonly bootstrap_server="kafka-1:19092"
 
 for _ in $(seq 1 30); do
   if /opt/kafka/bin/kafka-topics.sh --bootstrap-server "${bootstrap_server}" --list >/dev/null 2>&1; then
