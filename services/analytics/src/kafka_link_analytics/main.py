@@ -131,6 +131,14 @@ class AnalyticsProjector:
         )
 
     async def _push_json(self, key: str, payload: dict[str, object]) -> None:
+        event_id = payload.get("event_id")
+        if isinstance(event_id, str):
+            current = await self.redis.lindex(key, 0)
+            if current:
+                current_payload = json.loads(current)
+                if current_payload.get("event_id") == event_id:
+                    return
+
         await self.redis.lpush(key, json.dumps(payload))
         await self.redis.ltrim(key, 0, 99)
 
@@ -141,6 +149,7 @@ async def _main() -> None:
     consumer = Consumer(
         {
             "bootstrap.servers": settings.kafka_bootstrap_servers,
+            "broker.address.family": "v4",
             "group.id": CONSUMER_GROUP_ANALYTICS,
             "auto.offset.reset": "earliest",
         }

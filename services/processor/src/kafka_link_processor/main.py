@@ -161,6 +161,7 @@ async def _main() -> None:
     consumer = Consumer(
         {
             "bootstrap.servers": settings.kafka_bootstrap_servers,
+            "broker.address.family": "v4",
             "group.id": CONSUMER_GROUP_NORMALIZATION,
             "auto.offset.reset": "earliest",
         }
@@ -168,6 +169,7 @@ async def _main() -> None:
     producer = Producer(
         {
             "bootstrap.servers": settings.kafka_bootstrap_servers,
+            "broker.address.family": "v4",
             "client.id": settings.service_name,
         }
     )

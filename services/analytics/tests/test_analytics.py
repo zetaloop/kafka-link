@@ -27,6 +27,10 @@ class FakeRedis:
     async def ltrim(self, key: str, start: int, end: int) -> None:
         self.lists[key] = self.lists.get(key, [])[start : end + 1]
 
+    async def lindex(self, key: str, index: int) -> str | None:
+        items = self.lists.get(key, [])
+        return items[index] if 0 <= index < len(items) else None
+
     async def publish(self, channel: str, value: str) -> None:
         self.published.append((channel, value))
 
@@ -81,3 +85,28 @@ async def test_analytics_projects_city_event_and_alert_feed() -> None:
     assert latest["weather"]["metrics"]["temperature_c"] == 31.0
     assert alert_item["city_id"] == "tokyo"
     assert len(redis.published) >= 2
+
+
+@pytest.mark.anyio
+async def test_analytics_dedupes_same_city_event() -> None:
+    redis = FakeRedis()
+    projector = AnalyticsProjector(
+        settings=ServiceSettings.from_env("analytics-test"),
+        redis=redis,
+        consumer=FakeConsumer(),
+    )
+    normalized = NormalizedEvent(
+        event_id="weather:tokyo:dedupe",
+        kind=EventKind.WEATHER,
+        source_topic="raw.weather",
+        city_ids=["tokyo"],
+        observed_at=datetime.now(UTC),
+        ingested_at=datetime.now(UTC),
+        metrics={"temperature_c": 25.0},
+        summary="tokyo temperature 25.0°C",
+    )
+
+    await projector.project_normalized_event(normalized.model_dump_json())
+    await projector.project_normalized_event(normalized.model_dump_json())
+
+    assert len(redis.lists["view:city:tokyo:history:weather"]) == 1

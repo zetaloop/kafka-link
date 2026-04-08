@@ -114,29 +114,51 @@ export function CityDetailPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Recent alerts</CardTitle>
-            <CardDescription>这里显示当前城市最近命中的规则事件。</CardDescription>
+            <CardTitle>Event rail</CardTitle>
+            <CardDescription>附近地震和城市告警都走这一侧。</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
-            {data.alerts.length === 0 ? (
-              <EmptyState
-                eyebrow="event rail"
-                title="还没有关联到这个城市的告警。"
-                description="后续命中规则后，列表会按时间倒序追加。"
-              />
-            ) : (
-              data.alerts.map((alert) => (
-                <div
-                  key={alert.event_id}
-                  className="rounded-2xl border border-[var(--border)] bg-[var(--panel-soft)] p-4 text-sm"
-                >
-                  <div className="font-medium">{alert.summary}</div>
-                  <div className="mt-2 text-[var(--muted-foreground)]">
-                    {alert.metric}: {alert.actual_value} / {alert.threshold}
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              <div className="text-sm font-medium">Nearby earthquakes</div>
+              {data.earthquakes?.length ? (
+                data.earthquakes.map((item) => (
+                  <div
+                    key={item.event_id}
+                    className="rounded-2xl border border-[var(--border)] bg-[var(--panel-soft)] p-4 text-sm"
+                  >
+                    <div className="font-medium">{item.summary}</div>
+                    <div className="mt-2 text-[var(--muted-foreground)]">
+                      {item.location?.place ?? "Unknown location"}
+                    </div>
                   </div>
+                ))
+              ) : (
+                <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--panel-soft)] p-4 text-sm text-[var(--muted-foreground)]">
+                  当前没有关联到这个城市的地震事件。
                 </div>
-              ))
-            )}
+              )}
+            </div>
+
+            <div className="space-y-3">
+              <div className="text-sm font-medium">Recent alerts</div>
+              {data.alerts.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--panel-soft)] p-4 text-sm text-[var(--muted-foreground)]">
+                  当前还没有关联到这个城市的告警。
+                </div>
+              ) : (
+                data.alerts.map((alert) => (
+                  <div
+                    key={alert.event_id}
+                    className="rounded-2xl border border-[var(--border)] bg-[var(--panel-soft)] p-4 text-sm"
+                  >
+                    <div className="font-medium">{alert.summary}</div>
+                    <div className="mt-2 text-[var(--muted-foreground)]">
+                      {alert.metric}: {alert.actual_value} / {alert.threshold}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>

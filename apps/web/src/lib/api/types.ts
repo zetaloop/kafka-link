@@ -77,6 +77,7 @@ export type CityDetailData = {
   } | null;
   weather_history: CitySnapshotItem[];
   airquality_history: CitySnapshotItem[];
+  earthquakes?: EarthquakeFeedItem[];
   alerts: AlertFeedItem[];
 };
 

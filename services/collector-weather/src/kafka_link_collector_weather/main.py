@@ -97,6 +97,7 @@ async def _main() -> None:
     producer = Producer(
         {
             "bootstrap.servers": settings.kafka_bootstrap_servers,
+            "broker.address.family": "v4",
             "client.id": settings.service_name,
         }
     )

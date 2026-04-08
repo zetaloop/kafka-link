@@ -54,6 +54,8 @@ class AlertEngine:
             dedupe_key = f"{rule.rule_id}:{event.event_id}"
             if dedupe_key in self.seen_alerts:
                 continue
+            if not await self._reserve_alert(dedupe_key):
+                continue
 
             alerts.append(
                 AlertEvent(
@@ -109,6 +111,9 @@ class AlertEngine:
         items = await self.redis.mget([f"rule:{rule_id}" for rule_id in rule_ids])
         return [AlertRule.model_validate_json(item) for item in items if item]
 
+    async def _reserve_alert(self, dedupe_key: str) -> bool:
+        return bool(await self.redis.set(f"alert:dedupe:{dedupe_key}", "1", ex=86400, nx=True))
+
 
 async def _main() -> None:
     settings = ServiceSettings.from_env("alert-engine")
@@ -116,6 +121,7 @@ async def _main() -> None:
     consumer = Consumer(
         {
             "bootstrap.servers": settings.kafka_bootstrap_servers,
+            "broker.address.family": "v4",
             "group.id": CONSUMER_GROUP_ALERTING,
             "auto.offset.reset": "earliest",
         }
@@ -123,6 +129,7 @@ async def _main() -> None:
     producer = Producer(
         {
             "bootstrap.servers": settings.kafka_bootstrap_servers,
+            "broker.address.family": "v4",
             "client.id": settings.service_name,
         }
     )

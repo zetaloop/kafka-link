@@ -1,12 +1,11 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
-from ..dependencies import RuntimeDep
-
 router = APIRouter(tags=["ws"])
 
 
 @router.websocket("/api/ws")
-async def websocket_endpoint(websocket: WebSocket, runtime: RuntimeDep) -> None:
+async def websocket_endpoint(websocket: WebSocket) -> None:
+    runtime = websocket.app.state.runtime
     await runtime.hub.connect(websocket)
     await websocket.send_json(
         {

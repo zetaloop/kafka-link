@@ -236,3 +236,14 @@ def test_kafka_group_detail_missing_returns_404() -> None:
         response = client.get("/api/kafka/groups/missing")
 
     assert response.status_code == 404
+
+
+def test_websocket_ping_pong() -> None:
+    with create_test_client() as client:
+        with client.websocket_connect("/api/ws") as websocket:
+            connected = websocket.receive_json()
+            websocket.send_text("ping")
+            pong = websocket.receive_json()
+
+    assert connected["type"] == "connected"
+    assert pong == {"type": "pong"}

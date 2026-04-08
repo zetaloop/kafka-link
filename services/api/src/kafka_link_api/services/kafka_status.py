@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from confluent_kafka import ConsumerGroupTopicPartitions, TopicPartition
 from confluent_kafka.admin import AdminClient, OffsetSpec
@@ -13,9 +13,15 @@ def _enum_value(value: object) -> str | None:
 @dataclass(slots=True)
 class KafkaStatusService:
     bootstrap_servers: str
+    admin: AdminClient = field(init=False)
 
     def __post_init__(self) -> None:
-        self.admin = AdminClient({"bootstrap.servers": self.bootstrap_servers})
+        self.admin = AdminClient(
+            {
+                "bootstrap.servers": self.bootstrap_servers,
+                "broker.address.family": "v4",
+            }
+        )
 
     def read_cluster(self) -> dict[str, object]:
         cluster = self.admin.describe_cluster(request_timeout=5).result()
