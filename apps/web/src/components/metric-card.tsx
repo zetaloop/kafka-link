@@ -16,18 +16,18 @@ export function MetricCard({ label, value, hint, badge, icon }: MetricCardProps)
     <Card className="overflow-hidden">
       <CardHeader className="gap-4 pb-4">
         <div className="flex items-start justify-between gap-3">
-          <div>
+          <div className="space-y-2">
             <CardDescription>{label}</CardDescription>
-            <CardTitle className="mt-2 text-3xl">{value}</CardTitle>
+            <CardTitle className="text-3xl">{value}</CardTitle>
           </div>
-          <div className="flex size-11 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--panel-soft)] text-[var(--accent)]">
+          <div className="flex size-11 items-center justify-center rounded-xl border bg-muted text-primary">
             {icon}
           </div>
         </div>
       </CardHeader>
       <CardContent className="flex items-center justify-between gap-3 pt-0">
-        <p className="text-sm text-[var(--muted-foreground)]">{hint}</p>
-        <Badge>{badge}</Badge>
+        <p className="text-sm text-muted-foreground">{hint}</p>
+        <Badge variant="secondary">{badge}</Badge>
       </CardContent>
     </Card>
   );
