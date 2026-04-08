@@ -3,7 +3,6 @@ import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "rec
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { EmptyState } from "@/components/ui/empty-state";
 import type { CityDetailData, CitySnapshotItem } from "@/lib/api/types";
 import { useLiveRefresh } from "@/lib/realtime/use-live-refresh";
 
@@ -42,11 +41,15 @@ export function CityDetailPage() {
 
   if (!data.city) {
     return (
-      <EmptyState
-        eyebrow="城市详情"
-        title="这个城市当前还没有详情数据。"
-        description="可以先回到总览页加载 preset，或者添加一个新城市后再进入详情。"
-      />
+      <div className="flex h-[400px] flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border)] bg-[var(--panel-soft)] p-8 text-center animate-in fade-in zoom-in-95 duration-300">
+        <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
+          城市详情
+        </div>
+        <div className="text-lg font-medium">这个城市当前还没有详情数据。</div>
+        <div className="mt-2 text-sm text-[var(--muted-foreground)]">
+          可以先回到总览页加载 preset，或者添加一个新城市后再进入详情。
+        </div>
+      </div>
     );
   }
 

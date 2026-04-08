@@ -3,7 +3,6 @@ import { useLoaderData, useRevalidator } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { EmptyState } from "@/components/ui/empty-state";
 import { createRule, deleteRule } from "@/lib/api/client";
 import type { AlertFeedItem, CityRecord, RuleRecord } from "@/lib/api/types";
 import { useLiveRefresh } from "@/lib/realtime/use-live-refresh";
@@ -239,11 +238,15 @@ export function AlertsPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             {alerts.length === 0 ? (
-              <EmptyState
-                eyebrow="告警历史"
-                title="当前还没有告警记录。"
-                description="规则命中后，这里会直接显示 metric、阈值、实际值和来源事件。"
-              />
+              <div className="flex h-[300px] flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border)] bg-[var(--panel-soft)] p-8 text-center text-sm">
+                <div className="mb-2 text-xs font-medium uppercase tracking-wider text-[var(--muted-foreground)]">
+                  告警历史
+                </div>
+                <div className="text-base font-medium">当前还没有告警记录。</div>
+                <div className="mt-1 text-[var(--muted-foreground)]">
+                  规则命中后，这里会直接显示 metric、阈值、实际值和来源事件。
+                </div>
+              </div>
             ) : (
               alerts.map((alert) => (
                 <div
