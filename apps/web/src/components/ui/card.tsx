@@ -23,9 +23,9 @@ function Card({
 
   if (variant === "texture") {
     return (
-      <div className="rounded-3xl border border-white/50 dark:border-neutral-800/60 bg-gradient-to-b from-neutral-100 to-white/80 dark:from-neutral-800 dark:to-neutral-900 p-px shadow-[0_1px_1px_rgba(0,0,0,0.05),inset_0_1px_1px_rgba(255,252,240,0.5),inset_0_0_0_1px_rgba(255,255,255,0.1),0_0_1px_rgba(28,27,26,0.5)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.03),inset_0_0_0_1px_rgba(255,255,255,0.03),0_0_0_1px_rgba(0,0,0,0.1),0_2px_2px_rgba(0,0,0,0.1),0_4px_4px_rgba(0,0,0,0.1),0_8px_8px_rgba(0,0,0,0.1)]">
-        <div className="rounded-[23px] border border-black/5 dark:border-white/5 p-px">
-          <div className="rounded-[22px] border border-white/60 dark:border-neutral-700/40">
+      <div className="h-full rounded-3xl border border-white/50 dark:border-neutral-800/60 bg-gradient-to-b from-neutral-100 to-white/80 dark:from-neutral-800 dark:to-neutral-900 p-px shadow-[0_1px_1px_rgba(0,0,0,0.05),inset_0_1px_1px_rgba(255,252,240,0.5),inset_0_0_0_1px_rgba(255,255,255,0.1),0_0_1px_rgba(28,27,26,0.5)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.03),inset_0_0_0_1px_rgba(255,255,255,0.03),0_0_0_1px_rgba(0,0,0,0.1),0_2px_2px_rgba(0,0,0,0.1),0_4px_4px_rgba(0,0,0,0.1),0_8px_8px_rgba(0,0,0,0.1)]">
+        <div className="h-full rounded-[23px] border border-black/5 dark:border-white/5 p-px">
+          <div className="h-full rounded-[22px] border border-white/60 dark:border-neutral-700/40">
             {content}
           </div>
         </div>
