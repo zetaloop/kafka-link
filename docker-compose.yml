@@ -1,5 +1,19 @@
 name: kafka-link
 
+x-python-service: &python-service
+  restart: unless-stopped
+  networks:
+    - kafka-link
+  depends_on:
+    kafka-init:
+      condition: service_completed_successfully
+    redis:
+      condition: service_healthy
+  environment: &python-service-environment
+    KAFKA_BOOTSTRAP_SERVERS: kafka-1:19092,kafka-2:19092,kafka-3:19092
+    REDIS_URL: redis://redis:6379/0
+    REQUEST_TIMEOUT_SECONDS: "10"
+
 x-kafka-common: &kafka-common
   image: apache/kafka:4.0.0
   restart: unless-stopped
@@ -117,6 +131,103 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
+
+  api:
+    <<: *python-service
+    container_name: kafka-link-api
+    build:
+      context: .
+      dockerfile: ./infra/python-service.Dockerfile
+      args:
+        PACKAGE_NAME: kafka-link-api
+    command: ["uvicorn", "kafka_link_api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "8000:8000"
+
+  collector-weather:
+    <<: *python-service
+    container_name: kafka-link-collector-weather
+    build:
+      context: .
+      dockerfile: ./infra/python-service.Dockerfile
+      args:
+        PACKAGE_NAME: kafka-link-collector-weather
+    command: ["python", "-m", "kafka_link_collector_weather.main"]
+    environment:
+      <<: *python-service-environment
+      POLL_INTERVAL_SECONDS: "60"
+
+  collector-airquality:
+    <<: *python-service
+    container_name: kafka-link-collector-airquality
+    build:
+      context: .
+      dockerfile: ./infra/python-service.Dockerfile
+      args:
+        PACKAGE_NAME: kafka-link-collector-airquality
+    command: ["python", "-m", "kafka_link_collector_airquality.main"]
+    environment:
+      <<: *python-service-environment
+      POLL_INTERVAL_SECONDS: "60"
+
+  collector-earthquake:
+    <<: *python-service
+    container_name: kafka-link-collector-earthquake
+    build:
+      context: .
+      dockerfile: ./infra/python-service.Dockerfile
+      args:
+        PACKAGE_NAME: kafka-link-collector-earthquake
+    command: ["python", "-m", "kafka_link_collector_earthquake.main"]
+    environment:
+      <<: *python-service-environment
+      POLL_INTERVAL_SECONDS: "60"
+
+  processor:
+    <<: *python-service
+    container_name: kafka-link-processor
+    build:
+      context: .
+      dockerfile: ./infra/python-service.Dockerfile
+      args:
+        PACKAGE_NAME: kafka-link-processor
+    command: ["python", "-m", "kafka_link_processor.main"]
+
+  alert-engine:
+    <<: *python-service
+    container_name: kafka-link-alert-engine
+    build:
+      context: .
+      dockerfile: ./infra/python-service.Dockerfile
+      args:
+        PACKAGE_NAME: kafka-link-alert-engine
+    command: ["python", "-m", "kafka_link_alert_engine.main"]
+
+  analytics:
+    <<: *python-service
+    container_name: kafka-link-analytics
+    build:
+      context: .
+      dockerfile: ./infra/python-service.Dockerfile
+      args:
+        PACKAGE_NAME: kafka-link-analytics
+    command: ["python", "-m", "kafka_link_analytics.main"]
+
+  web:
+    container_name: kafka-link-web
+    restart: unless-stopped
+    networks:
+      - kafka-link
+    depends_on:
+      api:
+        condition: service_started
+    build:
+      context: .
+      dockerfile: ./infra/web.Dockerfile
+    environment:
+      VITE_API_PROXY_TARGET: http://api:8000
+    ports:
+      - "4173:4173"
 
 networks:
   kafka-link:
