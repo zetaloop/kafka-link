@@ -5,10 +5,13 @@ requires-python = ">=3.14"
 [manifest]
 members = [
     "kafka-link",
+    "kafka-link-alert-engine",
+    "kafka-link-analytics",
     "kafka-link-api",
     "kafka-link-collector-airquality",
     "kafka-link-collector-earthquake",
     "kafka-link-collector-weather",
+    "kafka-link-processor",
     "kafka-link-shared",
 ]
 
@@ -178,6 +181,40 @@ dev = [
 ]
 
 [[package]]
+name = "kafka-link-alert-engine"
+version = "0.1.0"
+source = { editable = "services/alert-engine" }
+dependencies = [
+    { name = "confluent-kafka" },
+    { name = "kafka-link-shared" },
+    { name = "redis" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "confluent-kafka", specifier = ">=2.14.0" },
+    { name = "kafka-link-shared", editable = "packages/shared" },
+    { name = "redis", specifier = ">=7.4.0" },
+]
+
+[[package]]
+name = "kafka-link-analytics"
+version = "0.1.0"
+source = { editable = "services/analytics" }
+dependencies = [
+    { name = "confluent-kafka" },
+    { name = "kafka-link-shared" },
+    { name = "redis" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "confluent-kafka", specifier = ">=2.14.0" },
+    { name = "kafka-link-shared", editable = "packages/shared" },
+    { name = "redis", specifier = ">=7.4.0" },
+]
+
+[[package]]
 name = "kafka-link-api"
 version = "0.1.0"
 source = { editable = "services/api" }
@@ -249,6 +286,23 @@ dependencies = [
 requires-dist = [
     { name = "confluent-kafka", specifier = ">=2.14.0" },
     { name = "httpx", specifier = ">=0.28.1" },
+    { name = "kafka-link-shared", editable = "packages/shared" },
+    { name = "redis", specifier = ">=7.4.0" },
+]
+
+[[package]]
+name = "kafka-link-processor"
+version = "0.1.0"
+source = { editable = "services/processor" }
+dependencies = [
+    { name = "confluent-kafka" },
+    { name = "kafka-link-shared" },
+    { name = "redis" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "confluent-kafka", specifier = ">=2.14.0" },
     { name = "kafka-link-shared", editable = "packages/shared" },
     { name = "redis", specifier = ">=7.4.0" },
 ]

@@ -19,6 +19,9 @@ pythonpath = [
     "services/collector-weather/src",
     "services/collector-airquality/src",
     "services/collector-earthquake/src",
+    "services/processor/src",
+    "services/alert-engine/src",
+    "services/analytics/src",
 ]
 testpaths = [
     "packages/shared/tests",
@@ -26,6 +29,9 @@ testpaths = [
     "services/collector-weather/tests",
     "services/collector-airquality/tests",
     "services/collector-earthquake/tests",
+    "services/processor/tests",
+    "services/alert-engine/tests",
+    "services/analytics/tests",
 ]
 
 [tool.ruff]
@@ -42,6 +48,12 @@ src = [
     "services/collector-airquality/tests",
     "services/collector-earthquake/src",
     "services/collector-earthquake/tests",
+    "services/processor/src",
+    "services/processor/tests",
+    "services/alert-engine/src",
+    "services/alert-engine/tests",
+    "services/analytics/src",
+    "services/analytics/tests",
 ]
 
 [tool.ruff.lint]
@@ -54,4 +66,7 @@ members = [
     "services/collector-weather",
     "services/collector-airquality",
     "services/collector-earthquake",
+    "services/processor",
+    "services/alert-engine",
+    "services/analytics",
 ]
