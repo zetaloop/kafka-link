@@ -5,19 +5,35 @@ import { cn } from "@/lib/utils";
 function Card({
   className,
   size = "default",
+  variant = "default",
   ...props
-}: React.ComponentProps<"div"> & { size?: "default" | "sm" }) {
-  return (
-    <div
-      data-slot="card"
-      data-size={size}
-      className={cn(
-        "group/card flex flex-col gap-4 overflow-hidden rounded-xl bg-card py-4 text-sm text-card-foreground ring-1 ring-foreground/10 has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:gap-3 data-[size=sm]:py-3 data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
-        className,
-      )}
-      {...props}
-    />
+}: React.ComponentProps<"div"> & {
+  size?: "default" | "sm";
+  variant?: "default" | "texture";
+}) {
+  const contentClassName = cn(
+    "group/card flex flex-col gap-4 overflow-hidden py-4 text-sm text-card-foreground has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:gap-3 data-[size=sm]:py-3 data-[size=sm]:has-data-[slot=card-footer]:pb-0",
+    variant === "texture"
+      ? "rounded-[21px] bg-gradient-to-b from-card/80 to-secondary/40 dark:from-card/90 dark:to-secondary/30 *:[img:first-child]:rounded-t-[21px] *:[img:last-child]:rounded-b-[21px]"
+      : "rounded-2xl bg-card ring-1 ring-foreground/10 bg-gradient-to-b from-card to-secondary/20 shadow-sm dark:shadow-md *:[img:first-child]:rounded-t-2xl *:[img:last-child]:rounded-b-2xl",
+    className,
   );
+
+  const content = <div data-slot="card" data-size={size} className={contentClassName} {...props} />;
+
+  if (variant === "texture") {
+    return (
+      <div className="rounded-3xl border border-white/50 dark:border-neutral-800/60 bg-gradient-to-b from-neutral-100 to-white/80 dark:from-neutral-800 dark:to-neutral-900 p-px shadow-[0_1px_1px_rgba(0,0,0,0.05),inset_0_1px_1px_rgba(255,252,240,0.5),inset_0_0_0_1px_rgba(255,255,255,0.1),0_0_1px_rgba(28,27,26,0.5)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.03),inset_0_0_0_1px_rgba(255,255,255,0.03),0_0_0_1px_rgba(0,0,0,0.1),0_2px_2px_rgba(0,0,0,0.1),0_4px_4px_rgba(0,0,0,0.1),0_8px_8px_rgba(0,0,0,0.1)]">
+        <div className="rounded-[23px] border border-black/5 dark:border-white/5 p-px">
+          <div className="rounded-[22px] border border-white/60 dark:border-neutral-700/40">
+            {content}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return content;
 }
 
 function CardHeader({ className, ...props }: React.ComponentProps<"div">) {

@@ -12,9 +12,9 @@ const buttonVariants = cva(
         outline:
           "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
+          "bg-secondary text-secondary-foreground hover:bg-gradient-to-b hover:from-secondary hover:to-secondary/70 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
         ghost:
-          "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
+          "hover:bg-gradient-to-b hover:from-muted hover:to-muted/70 hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:from-muted/60 dark:hover:to-muted/30",
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",
@@ -44,14 +44,51 @@ function Button({
   className,
   variant = "default",
   size = "default",
+  children,
   ...props
 }: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
+  if (variant === "default") {
+    return (
+      <ButtonPrimitive
+        data-slot="button"
+        className={cn(
+          "group/button inline-flex shrink-0 items-center justify-center rounded-lg p-px bg-gradient-to-b from-black/70 to-black dark:from-white dark:to-white/80 text-sm font-medium outline-none select-none transition-all focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50",
+          buttonVariants({ size, className: "" }),
+          className,
+        )}
+        {...props}
+      >
+        <span
+          className={cn(
+            "inline-flex w-full items-center justify-center gap-1.5 rounded-[calc(0.5rem-1px)] bg-gradient-to-b from-neutral-700 to-neutral-950 text-white/90 dark:from-neutral-200 dark:to-neutral-50 dark:text-black/80 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+            size === "xs"
+              ? "px-2 py-0.5 text-xs"
+              : size === "sm"
+                ? "px-2.5 py-1 text-[0.8rem]"
+                : size === "lg"
+                  ? "px-2.5 py-1.5"
+                  : size === "icon" ||
+                      size === "icon-xs" ||
+                      size === "icon-sm" ||
+                      size === "icon-lg"
+                    ? "p-0 justify-center"
+                    : "px-2.5 py-1",
+          )}
+        >
+          {children}
+        </span>
+      </ButtonPrimitive>
+    );
+  }
+
   return (
     <ButtonPrimitive
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}
-    />
+    >
+      {children}
+    </ButtonPrimitive>
   );
 }
 
