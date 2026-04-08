@@ -19,6 +19,7 @@ type ActivityEntry = {
   source: "Kafka" | "System";
   kind: string;
   detail: string;
+  count?: number;
   tone?: "default" | "warning";
 };
 
@@ -59,7 +60,30 @@ export function KafkaPage() {
     if (entries.length === 0) {
       return;
     }
-    setActivity((prev) => [...entries.reverse(), ...prev].slice(0, 120));
+    setActivity((prev) => {
+      const next = [...prev];
+      for (const entry of [...entries].reverse()) {
+        const first = next[0];
+        const canMerge =
+          first &&
+          first.time === entry.time &&
+          first.source === entry.source &&
+          first.kind === entry.kind &&
+          (entry.source === "System" || first.detail === entry.detail);
+
+        if (canMerge) {
+          next[0] = {
+            ...first,
+            count: (first.count ?? 1) + (entry.count ?? 1),
+            detail: entry.detail || first.detail,
+            tone: entry.tone ?? first.tone,
+          };
+        } else {
+          next.unshift(entry);
+        }
+      }
+      return next.slice(0, 120);
+    });
   }, []);
 
   useEffect(() => {
@@ -568,6 +592,11 @@ export function KafkaPage() {
                     <span className="shrink-0 font-mono text-xs text-muted-foreground">
                       {event.kind}
                     </span>
+                    {(event.count ?? 1) > 1 && (
+                      <Badge variant="outline" className="shrink-0 font-mono text-[10px]">
+                        ×{event.count}
+                      </Badge>
+                    )}
                     <span
                       className={`truncate font-mono text-sm ${event.tone === "warning" ? "text-chart-3" : ""}`}
                     >
