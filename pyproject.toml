@@ -13,16 +13,45 @@ dev = [
 ]
 
 [tool.pytest.ini_options]
-pythonpath = ["packages/shared/src", "services/api/src"]
-testpaths = ["packages/shared/tests", "services/api/tests"]
+pythonpath = [
+    "packages/shared/src",
+    "services/api/src",
+    "services/collector-weather/src",
+    "services/collector-airquality/src",
+    "services/collector-earthquake/src",
+]
+testpaths = [
+    "packages/shared/tests",
+    "services/api/tests",
+    "services/collector-weather/tests",
+    "services/collector-airquality/tests",
+    "services/collector-earthquake/tests",
+]
 
 [tool.ruff]
 target-version = "py314"
 line-length = 100
-src = ["packages/shared/src", "packages/shared/tests", "services/api/src", "services/api/tests"]
+src = [
+    "packages/shared/src",
+    "packages/shared/tests",
+    "services/api/src",
+    "services/api/tests",
+    "services/collector-weather/src",
+    "services/collector-weather/tests",
+    "services/collector-airquality/src",
+    "services/collector-airquality/tests",
+    "services/collector-earthquake/src",
+    "services/collector-earthquake/tests",
+]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "N", "RUF"]
 
 [tool.uv.workspace]
-members = ["packages/shared", "services/api"]
+members = [
+    "packages/shared",
+    "services/api",
+    "services/collector-weather",
+    "services/collector-airquality",
+    "services/collector-earthquake",
+]

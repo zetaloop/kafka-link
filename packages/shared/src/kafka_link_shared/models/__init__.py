@@ -1,6 +1,7 @@
 from .city import CityRecord
 from .events import (
     AlertEvent,
+    EventLocation,
     NormalizedEvent,
     RawAirQualityEvent,
     RawEarthquakeEvent,
@@ -14,6 +15,7 @@ __all__ = [
     "AlertRule",
     "AlertSource",
     "CityRecord",
+    "EventLocation",
     "NormalizedEvent",
     "RawAirQualityEvent",
     "RawEarthquakeEvent",
