@@ -1,7 +1,7 @@
 import { useLoaderData } from "react-router-dom";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { EmptyState } from "@/components/ui/empty-state";
+import { WavesLadder } from "lucide-react";
 import type { EarthquakeResponse } from "@/lib/api/types";
 import { useLiveRefresh } from "@/lib/realtime/use-live-refresh";
 
@@ -25,52 +25,44 @@ export function EarthquakesPage() {
   });
 
   return (
-    <section className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
+    <section className="mx-auto max-w-4xl">
       <Card>
         <CardHeader>
-          <CardTitle>Recent earthquakes</CardTitle>
-          <CardDescription>最近 7 天历史 + 新进入的实时地震事件都会出现在这里。</CardDescription>
+          <div className="flex items-center gap-2">
+            <WavesLadder className="size-5 text-[var(--muted-foreground)]" />
+            <CardTitle>全球最新地震</CardTitle>
+          </div>
+          <CardDescription>系统将实时接收地震数据，展示最近 7 天内的地震事件记录。</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {data.items.length === 0 ? (
-            <EmptyState
-              eyebrow="earthquakes"
-              title="当前还没有地震事件。"
-              description="collector 完成初始拉取后，这里会开始按时间倒序填充。"
-            />
+            <div className="flex flex-col items-center justify-center py-12 text-center text-[var(--muted-foreground)]">
+              <WavesLadder className="mb-4 size-8 opacity-50" />
+              <p>暂无地震事件记录</p>
+              <p className="text-sm">系统正在等待并监听新的事件流...</p>
+            </div>
           ) : (
             data.items.map((item) => (
               <div
                 key={item.event_id}
-                className="rounded-2xl border border-[var(--border)] bg-[var(--panel-soft)] p-4 text-sm"
+                className="flex flex-col justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--panel-soft)] p-4 sm:flex-row sm:items-center"
               >
-                <div className="flex items-center justify-between gap-4">
+                <div>
                   <div className="font-medium">{item.summary}</div>
-                  <div className="text-[var(--muted-foreground)]">
-                    {formatTimestamp(item.observed_at)}
+                  <div className="mt-1 text-sm text-[var(--muted-foreground)]">
+                    {item.location?.place ?? "未知地点"}
+                    {item.magnitude !== null ? ` · 震级 M${item.magnitude.toFixed(1)}` : ""}
+                    {item.location?.depth_km !== null && item.location?.depth_km !== undefined
+                      ? ` · 深度 ${item.location.depth_km.toFixed(1)} km`
+                      : ""}
                   </div>
                 </div>
-                <div className="mt-2 text-[var(--muted-foreground)]">
-                  {item.location?.place ?? "Unknown location"}
-                  {item.magnitude !== null ? ` · M${item.magnitude.toFixed(1)}` : ""}
-                  {item.location?.depth_km !== null && item.location?.depth_km !== undefined
-                    ? ` · ${item.location.depth_km.toFixed(1)} km`
-                    : ""}
+                <div className="shrink-0 text-sm text-[var(--muted-foreground)]">
+                  {formatTimestamp(item.observed_at)}
                 </div>
               </div>
             ))
           )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Display contract</CardTitle>
-          <CardDescription>保留地点、震级、深度、时间与关联城市字段。</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm leading-7 text-[var(--muted-foreground)]">
-          <p>事件列表不做地图化，避免把项目拖向 GIS 工具。</p>
-          <p>卡片密度已经对齐到 Overview 和 Alerts，后续不会风格漂移。</p>
         </CardContent>
       </Card>
     </section>
