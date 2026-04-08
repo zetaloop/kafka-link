@@ -92,82 +92,116 @@ export function AlertsPage() {
       <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
         <Card>
           <CardHeader>
-            <CardTitle>Rule management</CardTitle>
-            <CardDescription>规则表单、规则列表和启停操作会放在这侧。</CardDescription>
+            <CardTitle>规则管理</CardTitle>
+            <CardDescription>在此处创建和管理您的告警规则。</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <form className="space-y-3" onSubmit={handleCreateRule}>
-              <input
-                value={formState.name}
-                onChange={(event) =>
-                  setFormState((current) => ({ ...current, name: event.target.value }))
-                }
-                className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--panel-soft)] px-3 text-sm outline-none"
-                placeholder="Rule name"
-              />
-              <div className="grid gap-3 md:grid-cols-2">
-                <select
-                  value={formState.city_id}
-                  onChange={(event) =>
-                    setFormState((current) => ({ ...current, city_id: event.target.value }))
-                  }
-                  className="h-10 rounded-xl border border-[var(--border)] bg-[var(--panel-soft)] px-3 text-sm outline-none"
-                >
-                  {cities.map((city) => (
-                    <option key={city.city_id} value={city.city_id}>
-                      {city.name}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  value={formState.source}
-                  onChange={(event) => {
-                    const source = event.target.value as RuleRecord["source"];
-                    const nextMetric =
-                      source === "weather"
-                        ? "temperature_c"
-                        : source === "airquality"
-                          ? "aqi_us"
-                          : "earthquake_magnitude";
-                    setFormState((current) => ({ ...current, source, metric: nextMetric }));
-                  }}
-                  className="h-10 rounded-xl border border-[var(--border)] bg-[var(--panel-soft)] px-3 text-sm outline-none"
-                >
-                  <option value="weather">weather</option>
-                  <option value="airquality">airquality</option>
-                  <option value="earthquake">earthquake</option>
-                </select>
-                <select
-                  value={formState.metric}
-                  onChange={(event) =>
-                    setFormState((current) => ({
-                      ...current,
-                      metric: event.target.value as RuleRecord["metric"],
-                    }))
-                  }
-                  className="h-10 rounded-xl border border-[var(--border)] bg-[var(--panel-soft)] px-3 text-sm outline-none"
-                >
-                  {metricOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
+              <div className="space-y-1">
+                <div className="text-xs text-[var(--muted-foreground)]">规则名称</div>
                 <input
-                  value={formState.threshold}
+                  value={formState.name}
                   onChange={(event) =>
-                    setFormState((current) => ({ ...current, threshold: event.target.value }))
+                    setFormState((current) => ({ ...current, name: event.target.value }))
                   }
-                  className="h-10 rounded-xl border border-[var(--border)] bg-[var(--panel-soft)] px-3 text-sm outline-none"
-                  placeholder="Threshold"
+                  className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--panel-soft)] px-3 text-sm outline-none"
+                  placeholder="请输入规则名称"
                 />
+              </div>
+              <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+                <div className="space-y-1">
+                  <div className="text-xs text-[var(--muted-foreground)]">城市</div>
+                  <select
+                    value={formState.city_id}
+                    onChange={(event) =>
+                      setFormState((current) => ({ ...current, city_id: event.target.value }))
+                    }
+                    className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--panel-soft)] px-3 text-sm outline-none"
+                  >
+                    {cities.map((city) => (
+                      <option key={city.city_id} value={city.city_id}>
+                        {city.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-xs text-[var(--muted-foreground)]">数据源</div>
+                  <select
+                    value={formState.source}
+                    onChange={(event) => {
+                      const source = event.target.value as RuleRecord["source"];
+                      const nextMetric =
+                        source === "weather"
+                          ? "temperature_c"
+                          : source === "airquality"
+                            ? "aqi_us"
+                            : "earthquake_magnitude";
+                      setFormState((current) => ({ ...current, source, metric: nextMetric }));
+                    }}
+                    className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--panel-soft)] px-3 text-sm outline-none"
+                  >
+                    <option value="weather">天气</option>
+                    <option value="airquality">空气质量</option>
+                    <option value="earthquake">地震</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-xs text-[var(--muted-foreground)]">指标</div>
+                  <select
+                    value={formState.metric}
+                    onChange={(event) =>
+                      setFormState((current) => ({
+                        ...current,
+                        metric: event.target.value as RuleRecord["metric"],
+                      }))
+                    }
+                    className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--panel-soft)] px-3 text-sm outline-none"
+                  >
+                    {metricOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-xs text-[var(--muted-foreground)]">运算符</div>
+                  <select
+                    value={formState.operator}
+                    onChange={(event) =>
+                      setFormState((current) => ({
+                        ...current,
+                        operator: event.target.value as RuleRecord["operator"],
+                      }))
+                    }
+                    className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--panel-soft)] px-3 text-sm outline-none"
+                  >
+                    <option value="gt">&gt;</option>
+                    <option value="gte">&gt;=</option>
+                    <option value="lt">&lt;</option>
+                    <option value="lte">&lt;=</option>
+                    <option value="eq">==</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-xs text-[var(--muted-foreground)]">阈值</div>
+                  <input
+                    value={formState.threshold}
+                    onChange={(event) =>
+                      setFormState((current) => ({ ...current, threshold: event.target.value }))
+                    }
+                    className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--panel-soft)] px-3 text-sm outline-none"
+                    placeholder="请输入阈值"
+                  />
+                </div>
               </div>
               <Button
                 variant="secondary"
                 type="submit"
                 disabled={submitting || cities.length === 0}
               >
-                Create rule
+                创建规则
               </Button>
             </form>
 
@@ -189,7 +223,7 @@ export function AlertsPage() {
                       size="sm"
                       onClick={() => void handleDeleteRule(rule.rule_id)}
                     >
-                      Delete
+                      删除
                     </Button>
                   </div>
                 </div>
@@ -200,13 +234,13 @@ export function AlertsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Alert history</CardTitle>
+            <CardTitle>告警历史</CardTitle>
             <CardDescription>按时间倒序显示规则命中记录。</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {alerts.length === 0 ? (
               <EmptyState
-                eyebrow="alert history"
+                eyebrow="告警历史"
                 title="当前还没有告警记录。"
                 description="规则命中后，这里会直接显示 metric、阈值、实际值和来源事件。"
               />

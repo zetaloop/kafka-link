@@ -19,8 +19,8 @@ export function KafkaPage() {
     <section className="grid gap-5 lg:grid-cols-3">
       <Card>
         <CardHeader>
-          <CardTitle>Brokers</CardTitle>
-          <CardDescription>当前 cluster {cluster.cluster_id ?? "unknown"}</CardDescription>
+          <CardTitle>Broker</CardTitle>
+          <CardDescription>当前连接的 cluster {cluster.cluster_id ?? "unknown"}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {cluster.brokers.map((broker) => (
@@ -36,8 +36,8 @@ export function KafkaPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Topics</CardTitle>
-          <CardDescription>展示 raw / normalized / alerts 的分区布局。</CardDescription>
+          <CardTitle>Topic</CardTitle>
+          <CardDescription>系统中各业务 Topic 的分区状态与布局。</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
           {cluster.topics.map((topic) => (
@@ -56,8 +56,8 @@ export function KafkaPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Consumer groups</CardTitle>
-          <CardDescription>当前 group 状态与 lag 摘要。</CardDescription>
+          <CardTitle>Consumer Group</CardTitle>
+          <CardDescription>所有 Consumer Group 的消费状态与 Lag 积压。</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
           {groups.map((group) => {

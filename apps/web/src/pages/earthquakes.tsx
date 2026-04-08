@@ -1,7 +1,6 @@
-import { useLoaderData } from "react-router-dom";
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { WavesLadder } from "lucide-react";
+import { useLoaderData } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { EarthquakeResponse } from "@/lib/api/types";
 import { useLiveRefresh } from "@/lib/realtime/use-live-refresh";
 
