@@ -19,6 +19,12 @@ type KafkaLoaderData = {
   details: KafkaGroupDetail[];
 };
 
+function stableChartColor(name: string) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) | 0;
+  return `var(--chart-${(((h % 5) + 5) % 5) + 1})`;
+}
+
 export function KafkaPage() {
   const { cluster, groups, details } = useLoaderData() as KafkaLoaderData;
 
@@ -323,12 +329,12 @@ export function KafkaPage() {
                   contentStyle={{ borderRadius: "8px", border: "1px solid var(--border)" }}
                   labelStyle={{ fontWeight: "bold", marginBottom: "4px" }}
                 />
-                {groups.map((g, i) => (
+                {groups.map((g) => (
                   <Line
                     key={g.group_id}
                     type="monotone"
                     dataKey={g.group_id}
-                    stroke={`var(--chart-${(i % 5) + 1})`}
+                    stroke={stableChartColor(g.group_id)}
                     strokeWidth={2}
                     dot={false}
                     isAnimationActive={false}
