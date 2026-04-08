@@ -50,13 +50,14 @@ export function KafkaPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const [events, setEvents] = useState<Array<{ time: string; type: string; raw: RealtimeMessage }>>(
-    [],
-  );
+  const [events, setEvents] = useState<
+    Array<{ id: string; time: string; type: string; raw: RealtimeMessage }>
+  >([]);
 
   useEffect(() => {
     const unsubscribe = subscribeRealtime((message) => {
       const entry = {
+        id: crypto.randomUUID(),
         time: new Date().toLocaleTimeString("zh-CN", {
           hour: "2-digit",
           minute: "2-digit",
@@ -330,6 +331,7 @@ export function KafkaPage() {
                     stroke={`var(--chart-${(i % 5) + 1})`}
                     strokeWidth={2}
                     dot={false}
+                    isAnimationActive={false}
                   />
                 ))}
               </LineChart>
@@ -354,6 +356,7 @@ export function KafkaPage() {
                 let extra = "";
                 const msg = event.raw;
                 if (msg.type === "city.snapshot.updated") extra = `City: ${msg.city_id}`;
+                else if (msg.type === "overview.updated") extra = `Kind: ${msg.kind}`;
                 else if (msg.type === "alert.new")
                   extra = `City: ${msg.city_id} | Rule: ${msg.rule_id}`;
                 else if (msg.type === "earthquakes.updated") extra = `Event: ${msg.event_id}`;
