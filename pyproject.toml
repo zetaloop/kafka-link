@@ -1,0 +1,28 @@
+[project]
+name = "kafka-link"
+version = "0.1.0"
+description = "Kafka-based city environment intelligence platform"
+requires-python = ">=3.14"
+dependencies = []
+
+[dependency-groups]
+dev = [
+  "pydantic>=2.11.3,<3",
+  "pytest>=8.3.5,<9",
+  "ruff>=0.11.5,<0.12",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["packages/shared/src"]
+testpaths = ["packages/shared/tests"]
+
+[tool.ruff]
+target-version = "py314"
+line-length = 100
+src = ["packages/shared/src", "packages/shared/tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "N", "RUF"]
+
+[tool.uv.workspace]
+members = ["packages/shared"]

@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=80", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kafka-link-shared"
+version = "0.1.0"
+description = "Shared contracts and configuration for kafka-link services"
+requires-python = ">=3.14"
+dependencies = ["pydantic>=2.11.3,<3"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
