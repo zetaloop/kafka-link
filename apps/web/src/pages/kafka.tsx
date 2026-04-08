@@ -26,21 +26,29 @@ export function KafkaPage() {
 
   type LagSnapshot = { time: string; [groupId: string]: number | string };
   const lagHistory = useRef<LagSnapshot[]>([]);
+  const latestDetails = useRef(details);
+  const [, forceRender] = useState(0);
+
+  latestDetails.current = details;
 
   useEffect(() => {
-    const snapshot: LagSnapshot = {
-      time: new Date().toLocaleTimeString("zh-CN", {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      }),
-    };
-    for (const detail of details) {
-      const totalLag = detail.offsets.reduce((sum, o) => sum + (o.lag ?? 0), 0);
-      snapshot[detail.group.group_id] = totalLag;
-    }
-    lagHistory.current = [...lagHistory.current.slice(-29), snapshot];
-  }, [details]);
+    const interval = setInterval(() => {
+      const snapshot: LagSnapshot = {
+        time: new Date().toLocaleTimeString("zh-CN", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        }),
+      };
+      for (const detail of latestDetails.current) {
+        const totalLag = detail.offsets.reduce((sum, o) => sum + (o.lag ?? 0), 0);
+        snapshot[detail.group.group_id] = totalLag;
+      }
+      lagHistory.current = [...lagHistory.current.slice(-199), snapshot];
+      forceRender((n) => n + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const [events, setEvents] = useState<Array<{ time: string; type: string; raw: RealtimeMessage }>>(
     [],
