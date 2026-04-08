@@ -82,9 +82,9 @@ class RedisStore:
             ),
             CityRecord(
                 city_id="demo-san-francisco",
-                name="San Francisco",
+                name="旧金山",
                 country_code="US",
-                admin1="California",
+                admin1="加利福尼亚",
                 latitude=37.7749,
                 longitude=-122.4194,
                 timezone="America/Los_Angeles",

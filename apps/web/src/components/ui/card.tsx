@@ -14,7 +14,7 @@ function Card({
   const contentClassName = cn(
     "group/card flex flex-col gap-4 overflow-hidden py-4 text-sm text-card-foreground has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:gap-3 data-[size=sm]:py-3 data-[size=sm]:has-data-[slot=card-footer]:pb-0",
     variant === "texture"
-      ? "rounded-[21px] bg-gradient-to-b from-card/80 to-secondary/40 dark:from-card/90 dark:to-secondary/30 *:[img:first-child]:rounded-t-[21px] *:[img:last-child]:rounded-b-[21px]"
+      ? "h-full rounded-[22px] bg-gradient-to-b from-card/80 to-secondary/40 dark:from-card/90 dark:to-secondary/30 *:[img:first-child]:rounded-t-[22px] *:[img:last-child]:rounded-b-[22px]"
       : "rounded-2xl bg-card ring-1 ring-foreground/10 bg-gradient-to-b from-card to-secondary/20 shadow-sm dark:shadow-md *:[img:first-child]:rounded-t-2xl *:[img:last-child]:rounded-b-2xl",
     className,
   );
@@ -24,11 +24,7 @@ function Card({
   if (variant === "texture") {
     return (
       <div className="h-full rounded-3xl border border-white/50 dark:border-neutral-800/60 bg-gradient-to-b from-neutral-100 to-white/80 dark:from-neutral-800 dark:to-neutral-900 p-px shadow-[0_1px_1px_rgba(0,0,0,0.05),inset_0_1px_1px_rgba(255,252,240,0.5),inset_0_0_0_1px_rgba(255,255,255,0.1),0_0_1px_rgba(28,27,26,0.5)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.03),inset_0_0_0_1px_rgba(255,255,255,0.03),0_0_0_1px_rgba(0,0,0,0.1),0_2px_2px_rgba(0,0,0,0.1),0_4px_4px_rgba(0,0,0,0.1),0_8px_8px_rgba(0,0,0,0.1)]">
-        <div className="h-full rounded-[23px] border border-black/5 dark:border-white/5 p-px">
-          <div className="h-full rounded-[22px] border border-white/60 dark:border-neutral-700/40">
-            {content}
-          </div>
-        </div>
+        {content}
       </div>
     );
   }
