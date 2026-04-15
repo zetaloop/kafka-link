@@ -2,7 +2,7 @@
 
 Kafka Link 是一个由事件驱动的本地单用户演示系统。它接入了真实且公开的天气、空气质量和地震数据，通过 Kafka 将数据采集、标准化、告警和聚合分析串联起来，最后由基于 React 的前端为您呈现丰富的业务视图和实时的 Kafka 运行状态。
 
-目前，项目中已经配备了完整的本地运行环境，包含 3 节点的 Kafka 4.x KRaft 集群、Redis、一组相互协作的 Python 微服务，以及由 Vite 驱动的前端仪表盘。
+目前，项目中已经配备了完整的本地运行环境，包含 3 节点的 Kafka 3.9 ZooKeeper 集群、Redis、一组相互协作的 Python 微服务，以及由 Vite 驱动的前端仪表盘。
 
 ## 架构概览
 
@@ -109,7 +109,7 @@ pnpm --dir apps/web build
 
 ## 常见问题排查
 
-- 请首先通过 `docker compose ps` 确认所有关键服务（尤其是 Kafka Brokers、Redis、api、processor、analytics、alert-engine）都在正常运行。
+- 请首先通过 `docker compose ps` 确认所有关键服务（尤其是 ZooKeeper、Kafka Brokers、Redis、api、processor、analytics、alert-engine）都在正常运行。
 - 如果页面上显示没有数据，可以检查 `api/views/overview`、`api/views/alerts` 接口，或查看 `api/kafka/groups` 是否有滞后。
 - 全新启动时，如果没有关注的城市或规则，请在 Overview 页面先点击加载 demo preset。
 - 如果只能看到一个无法加载内容的空白页面，请确认 `http://localhost:4173` 能否正常访问，同时通过 `http://localhost:8000/api/healthz` 确认 API 服务的健康状态是否为 `ok`。

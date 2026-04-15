@@ -15,27 +15,71 @@ x-python-service: &python-service
     REQUEST_TIMEOUT_SECONDS: "10"
 
 x-kafka-common: &kafka-common
-  image: apache/kafka:4.0.0
+  image: confluentinc/cp-kafka:7.9.6
   restart: unless-stopped
   networks:
     - kafka-link
+  depends_on:
+    zookeeper-1:
+      condition: service_started
+    zookeeper-2:
+      condition: service_started
+    zookeeper-3:
+      condition: service_started
   environment: &kafka-common-environment
-    CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
-    KAFKA_PROCESS_ROLES: broker,controller
-    KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-    KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+    KAFKA_ZOOKEEPER_CONNECT: zookeeper-1:2181,zookeeper-2:2181,zookeeper-3:2181
+    KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
     KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-    KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
-    KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
-    KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "1"
-    KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: "1"
-    KAFKA_SHARE_COORDINATOR_STATE_TOPIC_REPLICATION_FACTOR: "1"
-    KAFKA_SHARE_COORDINATOR_STATE_TOPIC_MIN_ISR: "1"
+    KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "3"
+    KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "3"
+    KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: "2"
     KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: "0"
     KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
     KAFKA_LOG_DIRS: /var/lib/kafka/data
 
 services:
+  zookeeper-1:
+    image: zookeeper:3.9
+    container_name: kafka-link-zookeeper-1
+    restart: unless-stopped
+    hostname: zookeeper-1
+    networks:
+      - kafka-link
+    environment:
+      ZOO_MY_ID: "1"
+      ZOO_SERVERS: server.1=zookeeper-1:2888:3888;2181 server.2=zookeeper-2:2888:3888;2181 server.3=zookeeper-3:2888:3888;2181
+    volumes:
+      - zookeeper-1-data:/data
+      - zookeeper-1-datalog:/datalog
+
+  zookeeper-2:
+    image: zookeeper:3.9
+    container_name: kafka-link-zookeeper-2
+    restart: unless-stopped
+    hostname: zookeeper-2
+    networks:
+      - kafka-link
+    environment:
+      ZOO_MY_ID: "2"
+      ZOO_SERVERS: server.1=zookeeper-1:2888:3888;2181 server.2=zookeeper-2:2888:3888;2181 server.3=zookeeper-3:2888:3888;2181
+    volumes:
+      - zookeeper-2-data:/data
+      - zookeeper-2-datalog:/datalog
+
+  zookeeper-3:
+    image: zookeeper:3.9
+    container_name: kafka-link-zookeeper-3
+    restart: unless-stopped
+    hostname: zookeeper-3
+    networks:
+      - kafka-link
+    environment:
+      ZOO_MY_ID: "3"
+      ZOO_SERVERS: server.1=zookeeper-1:2888:3888;2181 server.2=zookeeper-2:2888:3888;2181 server.3=zookeeper-3:2888:3888;2181
+    volumes:
+      - zookeeper-3-data:/data
+      - zookeeper-3-datalog:/datalog
+
   kafka-1:
     <<: *kafka-common
     hostname: kafka-1
@@ -46,12 +90,12 @@ services:
       - kafka-1-data:/var/lib/kafka/data
     environment:
       <<: *kafka-common-environment
-      KAFKA_NODE_ID: "1"
-      KAFKA_LISTENERS: PLAINTEXT://kafka-1:19092,CONTROLLER://kafka-1:9093,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_BROKER_ID: "1"
+      KAFKA_LISTENERS: PLAINTEXT://kafka-1:19092,PLAINTEXT_HOST://0.0.0.0:9092
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-1:19092,PLAINTEXT_HOST://localhost:29092
     healthcheck:
       test:
-        ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server kafka-1:19092 >/dev/null 2>&1"]
+        ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server kafka-1:19092 >/dev/null 2>&1"]
       interval: 10s
       timeout: 10s
       retries: 12
@@ -67,12 +111,12 @@ services:
       - kafka-2-data:/var/lib/kafka/data
     environment:
       <<: *kafka-common-environment
-      KAFKA_NODE_ID: "2"
-      KAFKA_LISTENERS: PLAINTEXT://kafka-2:19092,CONTROLLER://kafka-2:9093,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_BROKER_ID: "2"
+      KAFKA_LISTENERS: PLAINTEXT://kafka-2:19092,PLAINTEXT_HOST://0.0.0.0:9092
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-2:19092,PLAINTEXT_HOST://localhost:39092
     healthcheck:
       test:
-        ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server kafka-2:19092 >/dev/null 2>&1"]
+        ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server kafka-2:19092 >/dev/null 2>&1"]
       interval: 10s
       timeout: 10s
       retries: 12
@@ -88,19 +132,19 @@ services:
       - kafka-3-data:/var/lib/kafka/data
     environment:
       <<: *kafka-common-environment
-      KAFKA_NODE_ID: "3"
-      KAFKA_LISTENERS: PLAINTEXT://kafka-3:19092,CONTROLLER://kafka-3:9093,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_BROKER_ID: "3"
+      KAFKA_LISTENERS: PLAINTEXT://kafka-3:19092,PLAINTEXT_HOST://0.0.0.0:9092
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-3:19092,PLAINTEXT_HOST://localhost:49092
     healthcheck:
       test:
-        ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server kafka-3:19092 >/dev/null 2>&1"]
+        ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server kafka-3:19092 >/dev/null 2>&1"]
       interval: 10s
       timeout: 10s
       retries: 12
       start_period: 20s
 
   kafka-init:
-    image: apache/kafka:4.0.0
+    image: confluentinc/cp-kafka:7.9.6
     container_name: kafka-link-kafka-init
     restart: "no"
     networks:
@@ -234,6 +278,12 @@ networks:
     name: kafka-link
 
 volumes:
+  zookeeper-1-data:
+  zookeeper-1-datalog:
+  zookeeper-2-data:
+  zookeeper-2-datalog:
+  zookeeper-3-data:
+  zookeeper-3-datalog:
   kafka-1-data:
   kafka-2-data:
   kafka-3-data:
